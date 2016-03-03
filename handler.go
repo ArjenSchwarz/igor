@@ -4,7 +4,7 @@ import (
 	// "encoding/json"
 	"github.com/ArjenSchwarz/igor/plugins"
 	"github.com/ArjenSchwarz/igor/slack"
-	// "log"
+	"log"
 	"net/url"
 	// "strings"
 )
@@ -24,6 +24,9 @@ func determineResponse(message string) *slack.SlackResponse {
 	// pluginmanager := plugins.GetPlugins
 	// pluginlist := pluginmanager
 	plugin := plugins.Help()
-	response, _ := plugin.Response(message)
+	response, err := plugin.Response(message)
+	if err != nil {
+		log.Println("Something went wrong")
+	}
 	return response
 }

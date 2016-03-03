@@ -45,7 +45,9 @@ func (HelpPlugin) Response(message string) (*slack.SlackResponse, error) {
 	if strings.Compare(message, "who are you?") == 0 {
 		response.Text = "I am a Slack slash command, written in Go, and running on Lambda."
 		response.ResponseType = "in_channel"
-	} else {
+	}
+
+	if response.Text == "" {
 		return nil, errors.New("No match")
 	}
 	return response, nil
