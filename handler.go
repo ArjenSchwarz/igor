@@ -9,7 +9,8 @@ import (
 	// "strings"
 )
 
-func handle(body *body) *slack.SlackResponse {
+// TODO validate the key
+func handle(body *body) slack.SlackResponse {
 	query, _ := url.ParseQuery(body.Body)
 	message := query.Get("text")
 	// config := ReadConfig()
@@ -20,13 +21,16 @@ func handle(body *body) *slack.SlackResponse {
 }
 
 // Parse the responses from a list of plugin triggers
-func determineResponse(message string) *slack.SlackResponse {
-	// pluginmanager := plugins.GetPlugins
-	// pluginlist := pluginmanager
-	plugin := plugins.Help()
-	response, err := plugin.Response(message)
-	if err != nil {
-		log.Println("Something went wrong")
+func determineResponse(message string) slack.SlackResponse {
+	pluginlist := plugins.GetPlugins()
+	//TODO clean this up
+	for _, value := range pluginlist {
+		response, err := value.Response(message)
+		if err != nil {
+			log.Println("Something went wrong")
+		}
+		return response
 	}
-	return response
+	// TODO return "nothing ofound" result if nothing is there
+	return slack.SlackResponse{}
 }

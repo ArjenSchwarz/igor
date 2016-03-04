@@ -16,6 +16,7 @@ type PluginConfig struct {
 	Name string
 }
 
+// TODO ensure this can be used for plugin config
 func ReadConfig() *Config {
 	filename, _ := filepath.Abs("./config.yml")
 	yamlFile, err := ioutil.ReadFile(filename)
