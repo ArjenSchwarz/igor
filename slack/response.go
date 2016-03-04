@@ -34,3 +34,7 @@ func (s *SlackResponse) AddAttachment(a Attachment) {
 func (s *SlackResponse) SetPublic() {
 	s.ResponseType = "in_channel"
 }
+
+func (s *SlackResponse) IsPublic() bool {
+	return s.ResponseType == "in_channel"
+}

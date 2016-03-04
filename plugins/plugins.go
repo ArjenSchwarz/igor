@@ -7,6 +7,10 @@ import (
 type IgorPlugin interface {
 	Response(string) (slack.SlackResponse, error)
 	Descriptions() map[string]string
+	Name() string
+	Version() string
+	Description() string
+	Author() string
 }
 
 //TODO Ensure plugins can be disabled

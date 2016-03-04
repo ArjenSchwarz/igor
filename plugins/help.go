@@ -19,7 +19,7 @@ type HelpPlugin struct {
 func Help() IgorPlugin {
 	plugin := HelpPlugin{
 		name:        "Help",
-		version:     "0.1",
+		version:     "1.0",
 		author:      "Arjen Schwarz",
 		description: "Basic help functionalities",
 	}
@@ -32,13 +32,11 @@ func (HelpPlugin) Response(message string) (slack.SlackResponse, error) {
 	if strings.Compare(message, "help") == 0 {
 		response = handleHelp(message, response)
 	}
-	if strings.Compare(message, "explain yourself") == 0 {
-		response = handleExplain(message, response)
-	}
-	if strings.Compare(message, "who are you?") == 0 {
-		response = handleWhoAreYou(message, response)
+	if strings.Compare(message, "introduce yourself") == 0 {
+		response = handleIntroduction(message, response)
 	}
 	if response.Text == "" {
+
 		return response, errors.New("No match")
 	}
 	return response, nil
@@ -46,14 +44,13 @@ func (HelpPlugin) Response(message string) (slack.SlackResponse, error) {
 
 func (HelpPlugin) Descriptions() map[string]string {
 	descriptions := make(map[string]string)
-	descriptions["help"] = "This help message, proving a list of available commands"
-	descriptions["who are you?"] = "A public introduction of Igor"
-	descriptions["explain yourself"] = "A public explanation of Igor"
+	descriptions["help"] = "This help message, providing a list of available commands"
+	descriptions["introduce yourself"] = "A public introduction of Igor"
 	return descriptions
 }
 
 func handleHelp(message string, response slack.SlackResponse) slack.SlackResponse {
-	response.Text = "I can see that you're trying to find an igor, would you like some help with that?"
+	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
 	allPlugins := GetPlugins()
 	var buffer bytes.Buffer
 	for _, value := range allPlugins {
@@ -62,24 +59,34 @@ func handleHelp(message string, response slack.SlackResponse) slack.SlackRespons
 		}
 	}
 	attach := slack.Attachment{}
-	attach.Title = "Available igors"
+	attach.Title = "Available Igors"
 	attach.Text = buffer.String()
 	attach.EnableMarkdownFor("text")
 	response.AddAttachment(attach)
 	return response
 }
 
-func handleExplain(message string, response slack.SlackResponse) slack.SlackResponse {
-	response.Text = "Igors are useful servants. We are legion and can do many things."
+func handleIntroduction(message string, response slack.SlackResponse) slack.SlackResponse {
+	response.Text = "I am Igor, reprethenting We-R-Igors."
 	response.SetPublic()
 	attach := slack.Attachment{}
-	attach.Text = "/igor help will show you everything I can currently do."
+	attach.Title = "A Spare Hand When Needed"
+	attach.Text = "We come from Überwald, but are alwayth where we are needed motht.\n"
+	attach.Text += "Run */igor help* to see which Igors are currently available."
+	attach.EnableMarkdownFor("text")
 	response.AddAttachment(attach)
 	return response
 }
 
-func handleWhoAreYou(message string, response slack.SlackResponse) slack.SlackResponse {
-	response.Text = "I am a Slack slash command, written in Go, and running on Lambda."
-	response.SetPublic()
-	return response
+func (p HelpPlugin) Author() string {
+	return p.author
+}
+func (p HelpPlugin) Version() string {
+	return p.version
+}
+func (p HelpPlugin) Description() string {
+	return p.description
+}
+func (p HelpPlugin) Name() string {
+	return p.name
 }
