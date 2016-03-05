@@ -10,6 +10,7 @@ type Attachment struct {
 	Title    string   `json:"title,omitempty"`
 	Text     string   `json:"text,omitempty"`
 	PreText  string   `json:"pretext,omitempty"`
+	Color    string   `json:"color"`
 	Markdown []string `json:"mrkdwn_in,omitempty"`
 }
 
@@ -37,4 +38,16 @@ func (s *SlackResponse) SetPublic() {
 
 func (s *SlackResponse) IsPublic() bool {
 	return s.ResponseType == "in_channel"
+}
+
+func NothingFoundResponse(request SlackRequest) SlackResponse {
+	response := SlackResponse{}
+	response.Text = "Our apologies. No Igor was able to handle your request."
+	attach := Attachment{}
+	attach.Color = "danger"
+	attach.Text = "You tried to look for *" + request.Command + " " + request.Text + "\n"
+	attach.Text += "Please try *" + request.Command + " help* to see which Igors are available"
+	attach.EnableMarkdownFor("text")
+	response.AddAttachment(attach)
+	return response
 }

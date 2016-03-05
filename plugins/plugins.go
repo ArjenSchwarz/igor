@@ -5,12 +5,10 @@ import (
 )
 
 type IgorPlugin interface {
-	Response(string) (slack.SlackResponse, error)
-	Descriptions() map[string]string
+	Work(slack.SlackRequest) (slack.SlackResponse, error)
+	Describe() map[string]string
 	Name() string
-	Version() string
 	Description() string
-	Author() string
 }
 
 //TODO Ensure plugins can be disabled

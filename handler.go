@@ -4,33 +4,29 @@ import (
 	// "encoding/json"
 	"github.com/ArjenSchwarz/igor/plugins"
 	"github.com/ArjenSchwarz/igor/slack"
-	"log"
-	"net/url"
+	// "log"
 	// "strings"
 )
 
 // TODO validate the key
 func handle(body *body) slack.SlackResponse {
-	query, _ := url.ParseQuery(body.Body)
-	message := query.Get("text")
+	request := slack.LoadRequestFromQuery(body.Body)
 	// config := ReadConfig()
 	//
 
-	response := determineResponse(message)
+	response := determineResponse(request)
 	return response
 }
 
 // Parse the responses from a list of plugin triggers
-func determineResponse(message string) slack.SlackResponse {
+func determineResponse(request slack.SlackRequest) slack.SlackResponse {
 	pluginlist := plugins.GetPlugins()
 	//TODO clean this up
 	for _, value := range pluginlist {
-		response, err := value.Response(message)
-		if err != nil {
-			log.Println("Something went wrong")
+		response, err := value.Work(request)
+		if err == nil {
+			return response
 		}
-		return response
 	}
-	// TODO return "nothing ofound" result if nothing is there
-	return slack.SlackResponse{}
+	return slack.NothingFoundResponse(request)
 }

@@ -11,24 +11,20 @@ import (
 
 type HelpPlugin struct {
 	name        string
-	version     string
-	author      string
 	description string
 }
 
 func Help() IgorPlugin {
 	plugin := HelpPlugin{
-		name:        "Help",
-		version:     "1.0",
-		author:      "Arjen Schwarz",
-		description: "Basic help functionalities",
+		name:        "help",
+		description: "I provide help with the following commands",
 	}
 	return plugin
 }
 
-func (HelpPlugin) Response(message string) (slack.SlackResponse, error) {
+func (HelpPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, error) {
 	response := slack.SlackResponse{}
-	message = strings.ToLower(message)
+	message := strings.ToLower(request.Text)
 	if strings.Compare(message, "help") == 0 {
 		response = handleHelp(message, response)
 	}
@@ -42,7 +38,7 @@ func (HelpPlugin) Response(message string) (slack.SlackResponse, error) {
 	return response, nil
 }
 
-func (HelpPlugin) Descriptions() map[string]string {
+func (HelpPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["help"] = "This help message, providing a list of available commands"
 	descriptions["introduce yourself"] = "A public introduction of Igor"
@@ -53,16 +49,16 @@ func handleHelp(message string, response slack.SlackResponse) slack.SlackRespons
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
 	allPlugins := GetPlugins()
 	var buffer bytes.Buffer
-	for _, value := range allPlugins {
-		for command, description := range value.Descriptions() {
+	for _, plugin := range allPlugins {
+		for command, description := range plugin.Describe() {
 			buffer.WriteString("- *" + command + "*: " + description + "\n")
 		}
+		attach := slack.Attachment{}
+		attach.Title = plugin.Description()
+		attach.Text = buffer.String()
+		attach.EnableMarkdownFor("text")
+		response.AddAttachment(attach)
 	}
-	attach := slack.Attachment{}
-	attach.Title = "Available Igors"
-	attach.Text = buffer.String()
-	attach.EnableMarkdownFor("text")
-	response.AddAttachment(attach)
 	return response
 }
 
@@ -78,12 +74,6 @@ func handleIntroduction(message string, response slack.SlackResponse) slack.Slac
 	return response
 }
 
-func (p HelpPlugin) Author() string {
-	return p.author
-}
-func (p HelpPlugin) Version() string {
-	return p.version
-}
 func (p HelpPlugin) Description() string {
 	return p.description
 }
