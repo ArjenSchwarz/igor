@@ -1,17 +1,37 @@
+// Package slack provides all the Slack specific code for Igor
 package slack
 
 type SlackResponse struct {
 	Text         string       `json:"text"`
 	ResponseType string       `json:"response_type,omitempty"`
 	Attachments  []Attachment `json:"attachments,omitempty"`
+	UnfurlLinks  bool         `json:"unfurl_links,omitempty"`
+	UnfurlMedia  bool         `json:"unfurl_media,omitempty"`
+	Markdown     bool         `json:"mrkdwn,omitempty"`
+	Username     string       `json:"username,omitempty"`
+	IconEmoji    string       `json:"icon_emoji,omitempty"`
 }
 
 type Attachment struct {
-	Title    string   `json:"title,omitempty"`
-	Text     string   `json:"text,omitempty"`
-	PreText  string   `json:"pretext,omitempty"`
-	Color    string   `json:"color"`
-	Markdown []string `json:"mrkdwn_in,omitempty"`
+	Title      string   `json:"title,omitempty"`
+	TitleLink  string   `json:"title_link,omitempty"`
+	Text       string   `json:"text,omitempty"`
+	PreText    string   `json:"pretext,omitempty"`
+	Color      string   `json:"color,omitempty"`
+	Markdown   []string `json:"mrkdwn_in,omitempty"`
+	Fallback   string   `json:"fallback,omitempty"`
+	AuthorName string   `json:"author_name,omitempty"`
+	AuthorLink string   `json:"author_link,omitempty"`
+	AuthorIcon string   `json:"author_icon,omitempty"`
+	ImageUrl   string   `json:"image_url,omitempty"`
+	ThumbUrl   string   `json:"thumb_url,omitempty"`
+	Fields     []Field  `json:"fields,omitempty"`
+}
+
+type Field struct {
+	Title string `json:"title"`
+	Value string `json:"value"`
+	Short bool   `json:"short,omitempty"`
 }
 
 //TODO validation

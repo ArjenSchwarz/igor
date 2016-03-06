@@ -1,3 +1,4 @@
+// Package slack provides all the Slack specific code for Igor
 package slack
 
 import (
@@ -19,6 +20,7 @@ type SlackRequest struct {
 	ResponseUrl string
 }
 
+// LoadRequestFromQuery translates the query string sent by Slack into a SlackRequest struct
 func LoadRequestFromQuery(query string) SlackRequest {
 	parsedQuery, _ := url.ParseQuery(query)
 	request := SlackRequest{}
