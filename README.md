@@ -12,7 +12,7 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 
 # Installation
 
-The installation is slightly messy, as both Slack and Lambda require details that can only be provided after you're done. To provide the easiest step by step instructions, this therefore means you'll have to upload the code twice.
+The installation is slightly messy, as both Slack and Lambda require details that can only be provided after you're done. To provide the easiest step by step instructions, this therefore means you'll be switching between the two.
 
 ## Configure Slack
 
