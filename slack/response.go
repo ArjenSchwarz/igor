@@ -51,3 +51,9 @@ func NothingFoundResponse(request SlackRequest) SlackResponse {
 	response.AddAttachment(attach)
 	return response
 }
+
+func ValidationErrorResponse() SlackResponse {
+	response := SlackResponse{}
+	response.Text = "Invalid token."
+	return response
+}

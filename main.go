@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	// "log"
 	"os"
 )
 
@@ -17,8 +16,8 @@ func main() {
 	args := os.Args
 	event := []byte(args[1])
 
-	body := new(body)
-	json.Unmarshal(event, body)
+	body := body{}
+	json.Unmarshal(event, &body)
 
 	response := handle(body)
 

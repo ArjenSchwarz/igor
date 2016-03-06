@@ -1,7 +1,6 @@
 package config
 
 import (
-	// "fmt"
 	"io/ioutil"
 	"path/filepath"
 
@@ -9,7 +8,7 @@ import (
 )
 
 type Config struct {
-	Service string `yaml:"service"`
+	Token string `yaml:"token"`
 }
 
 type PluginConfig struct {
@@ -17,7 +16,7 @@ type PluginConfig struct {
 }
 
 // TODO ensure this can be used for plugin config
-func ReadConfig() *Config {
+func ReadConfig() Config {
 	filename, _ := filepath.Abs("./config.yml")
 	yamlFile, err := ioutil.ReadFile(filename)
 
@@ -25,7 +24,7 @@ func ReadConfig() *Config {
 		panic(err)
 	}
 
-	config := new(Config)
+	config := Config{}
 
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {

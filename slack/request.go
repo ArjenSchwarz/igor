@@ -2,6 +2,8 @@ package slack
 
 import (
 	"net/url"
+
+	"github.com/ArjenSchwarz/igor/config"
 )
 
 type SlackRequest struct {
@@ -31,4 +33,8 @@ func LoadRequestFromQuery(query string) SlackRequest {
 	request.Text = parsedQuery.Get("text")
 	request.ResponseUrl = parsedQuery.Get("response_url")
 	return request
+}
+
+func (s *SlackRequest) Validate(config config.Config) bool {
+	return s.Token == config.Token
 }
