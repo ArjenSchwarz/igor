@@ -6,6 +6,9 @@ import (
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
+// handle is the main handling function. It parses the received message and
+// ensures that a response is collected.
+// It also ensures that the resulting response is properly escaped
 func handle(body body) slack.SlackResponse {
 	request := slack.LoadRequestFromQuery(body.Body)
 	config := config.ReadConfig()
@@ -15,6 +18,7 @@ func handle(body body) slack.SlackResponse {
 	} else {
 		response = determineResponse(request)
 	}
+	response.Escape()
 	return response
 }
 

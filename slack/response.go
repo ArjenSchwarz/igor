@@ -1,6 +1,10 @@
 // Package slack provides all the Slack specific code for Igor
 package slack
 
+import (
+	"strings"
+)
+
 type SlackResponse struct {
 	Text         string       `json:"text"`
 	ResponseType string       `json:"response_type,omitempty"`
@@ -76,4 +80,32 @@ func ValidationErrorResponse() SlackResponse {
 	response := SlackResponse{}
 	response.Text = "Invalid token."
 	return response
+}
+
+// EscapeString escapes any values as demanded by Slack
+// This means it HTML escapes '&', '<', and '>'
+// It doesn't double escape. If a string is already escaped it won't do it
+// again. Meaning, if you supply "&amp;" it will return "&amp;"
+func EscapeString(toEscape string) string {
+	toEscape = strings.Replace(toEscape, "&amp;", "&", -1)
+	toEscape = strings.Replace(toEscape, "&lt;", "<", -1)
+	toEscape = strings.Replace(toEscape, "&gt;", ">", -1)
+	toEscape = strings.Replace(toEscape, "&", "&amp;", -1)
+	toEscape = strings.Replace(toEscape, "<", "&lt;", -1)
+	toEscape = strings.Replace(toEscape, ">", "&gt;", -1)
+	return toEscape
+}
+
+// Escape escapes all values in the SlackResponse that need to be escaped
+func (s *SlackResponse) Escape() {
+	s.Text = EscapeString(s.Text)
+	for _, attach := range s.Attachments {
+		attach.Title = EscapeString(attach.Title)
+		attach.Text = EscapeString(attach.Text)
+		attach.PreText = EscapeString(attach.PreText)
+		for _, field := range attach.Fields {
+			field.Title = EscapeString(field.Title)
+			field.Value = EscapeString(field.Value)
+		}
+	}
 }
