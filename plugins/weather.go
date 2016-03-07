@@ -53,12 +53,14 @@ func (w WeatherPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, er
 
 // handleWeather handles a request for the current Weather
 func (w *WeatherPlugin) handleWeather(request slack.SlackRequest) (slack.SlackResponse, error) {
-	city := request.Text[8:]
-	response := slack.SlackResponse{}
-	if city == "" {
+	var city string
+	if len(request.Text) > 8 {
+		city = request.Text[8:]
+	} else {
 		city = w.Config.DefaultCity
 	}
 	city = url.QueryEscape(city)
+	response := slack.SlackResponse{}
 	url := fmt.Sprintf("%sfind?APPID=%s&q=%s&units=%s", w.Source, w.Config.ApiToken, city, w.Config.Units)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -98,12 +100,14 @@ func (w *WeatherPlugin) handleWeather(request slack.SlackRequest) (slack.SlackRe
 
 // handleForecast handles the request for a forecast
 func (w *WeatherPlugin) handleForecast(request slack.SlackRequest) (slack.SlackResponse, error) {
-	city := request.Text[9:]
-	response := slack.SlackResponse{}
-	if city == "" {
+	var city string
+	if len(request.Text) > 9 {
+		city = request.Text[9:]
+	} else {
 		city = w.Config.DefaultCity
 	}
 	city = url.QueryEscape(city)
+	response := slack.SlackResponse{}
 	url := fmt.Sprintf("%sforecast/daily?APPID=%s&q=%s&units=%s", w.Source, w.Config.ApiToken, city, w.Config.Units)
 	resp, err := http.Get(url)
 	if err != nil {
