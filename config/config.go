@@ -8,27 +8,26 @@ import (
 )
 
 type Config struct {
-	Token string `yaml:"token"`
+	Token string
 }
 
-type PluginConfig struct {
-	Name string
-}
-
-// TODO ensure this can be used for plugin config
 func ReadConfig() Config {
+	configFile := GetConfigFile()
+	config := Config{}
+
+	err := yaml.Unmarshal(configFile, &config)
+	if err != nil {
+		panic(err)
+	}
+	return config
+}
+
+func GetConfigFile() []byte {
 	filename, _ := filepath.Abs("./config.yml")
 	yamlFile, err := ioutil.ReadFile(filename)
 
 	if err != nil {
 		panic(err)
 	}
-
-	config := Config{}
-
-	err = yaml.Unmarshal(yamlFile, &config)
-	if err != nil {
-		panic(err)
-	}
-	return config
+	return yamlFile
 }

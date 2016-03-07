@@ -15,5 +15,6 @@ type IgorPlugin interface {
 func GetPlugins() map[string]IgorPlugin {
 	plugins := make(map[string]IgorPlugin)
 	plugins["help"] = Help()
+	plugins["weather"] = Weather()
 	return plugins
 }
