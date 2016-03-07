@@ -56,6 +56,14 @@ func (s *SlackResponse) AddAttachment(a Attachment) {
 	s.Attachments = append(attachments, a)
 }
 
+func (a *Attachment) AddField(f Field) {
+	var fields []Field
+	if a.Fields != nil {
+		fields = a.Fields
+	}
+	a.Fields = append(fields, f)
+}
+
 func (s *SlackResponse) SetPublic() {
 	s.ResponseType = "in_channel"
 }
