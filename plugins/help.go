@@ -58,6 +58,7 @@ func handleHelp(message string, response slack.SlackResponse) slack.SlackRespons
 		attach.Text = buffer.String()
 		attach.EnableMarkdownFor("text")
 		response.AddAttachment(attach)
+		buffer.Reset()
 	}
 	return response
 }
