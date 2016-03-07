@@ -22,12 +22,13 @@ func handle(body body) slack.SlackResponse {
 	return response
 }
 
-// Parse the responses from a list of plugin triggers
+// determineResponse parses the responses from a list of plugin triggers
 func determineResponse(request slack.SlackRequest) slack.SlackResponse {
 	pluginlist := plugins.GetPlugins()
 	//TODO clean this up
 	for _, value := range pluginlist {
 		response, err := value.Work(request)
+		// TODO differentiate between not found and something went wrong errors
 		if err == nil {
 			return response
 		}

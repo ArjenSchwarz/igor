@@ -1,1 +1,4 @@
 token: "YOUR_SLACK_TOKEN"
+weather:
+  api_token: "GET THIS FROM http://openweathermap.org"
+  default_city: "Melbourne,au"

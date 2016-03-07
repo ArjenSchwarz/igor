@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -39,16 +40,15 @@ func (WeatherPlugin) Describe() map[string]string {
 // Work makes the WeatherPlugin run its commands
 func (w WeatherPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, error) {
 	response := slack.SlackResponse{}
-	if request.Text[:7] == "weather" {
+	if len(request.Text) >= 7 && request.Text[:7] == "weather" {
 		response, err := w.handleWeather(request)
 		return response, err
-	}
-	if request.Text[:8] == "forecast" {
+	} else if len(request.Text) >= 8 && request.Text[:8] == "forecast" {
 		response, err := w.handleForecast(request)
 		return response, err
 	}
 
-	return response, nil
+	return response, errors.New("No Match")
 }
 
 // handleWeather handles a request for the current Weather
