@@ -9,6 +9,15 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 # Available Plugins
 
 * Help
+* Weather
+
+# TODO
+
+Many things, including but not limited to:
+
+* Better documentation
+* More plugins
+* More tests
 
 # Installation
 
