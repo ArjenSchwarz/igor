@@ -10,6 +10,7 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 
 * Help
 * Weather
+* (Random) Tumblr image
 
 # TODO
 

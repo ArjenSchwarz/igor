@@ -2,3 +2,14 @@ token: "YOUR_SLACK_TOKEN"
 weather:
   api_token: "GET THIS FROM http://openweathermap.org"
   default_city: "Melbourne,au"
+randomtumblr:
+  devops:
+    name: DevOps Reactions
+    url: "http://devopsreactions.tumblr.com"
+    image_src: ".item img"
+    title_src: ".post_title"
+  infosec:
+    name: Security Reactions
+    url: "http://securityreactions.tumblr.com"
+    image_src: "#posts .body-text img"
+    title_src: "#posts .post-content .title"
