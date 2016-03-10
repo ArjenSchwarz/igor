@@ -8,7 +8,9 @@ import (
 )
 
 type Config struct {
-	Token string
+	Token     string
+	Blacklist []string
+	Whitelist []string
 }
 
 func ReadConfig() Config {

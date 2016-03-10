@@ -16,15 +16,15 @@ func handle(body body) slack.SlackResponse {
 	if !request.Validate(config) {
 		response = slack.ValidationErrorResponse()
 	} else {
-		response = determineResponse(request)
+		response = determineResponse(request, config)
 	}
 	response.Escape()
 	return response
 }
 
 // determineResponse parses the responses from a list of plugin triggers
-func determineResponse(request slack.SlackRequest) slack.SlackResponse {
-	pluginlist := plugins.GetPlugins()
+func determineResponse(request slack.SlackRequest, config config.Config) slack.SlackResponse {
+	pluginlist := plugins.GetPlugins(config)
 	//TODO clean this up
 	for _, value := range pluginlist {
 		response, err := value.Work(request)

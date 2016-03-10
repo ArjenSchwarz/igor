@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	// "github.com/ArjenSchwarz/igor/config"
+	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
@@ -49,7 +49,7 @@ func (HelpPlugin) Describe() map[string]string {
 
 func handleHelp(response slack.SlackResponse) slack.SlackResponse {
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
-	allPlugins := GetPlugins()
+	allPlugins := GetPlugins(config.ReadConfig())
 	var buffer bytes.Buffer
 	for _, plugin := range allPlugins {
 		for command, description := range plugin.Describe() {
