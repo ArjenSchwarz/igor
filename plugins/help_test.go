@@ -83,5 +83,4 @@ func TestWork(t *testing.T) {
 	if !response.IsPublic() {
 		t.Error("Introduce yourself should not give a public response")
 	}
-
 }
