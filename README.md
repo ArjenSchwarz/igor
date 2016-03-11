@@ -6,6 +6,10 @@ The name is based on Sir Terry Pratchett's wonderful use of Dr. Frankenstein's s
 
 Igor is currently early in development, and can't do much yet, but it is usable.
 
+# Build status
+
+[![wercker status](https://app.wercker.com/status/eea144a7251e1b84d514904e19eff205/m "wercker status")](https://app.wercker.com/project/bykey/eea144a7251e1b84d514904e19eff205)
+
 # Available Plugins
 
 * Help
