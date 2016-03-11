@@ -20,6 +20,7 @@ func GetPlugins(config config.Config) map[string]IgorPlugin {
 	plugins["help"] = Help()
 	plugins["weather"] = Weather()
 	plugins["tumblr"] = RandomTumblr()
+	plugins["status"] = Status()
 
 	// Whitelist plugins
 	if config.Whitelist != nil {

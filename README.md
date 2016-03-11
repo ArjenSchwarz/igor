@@ -12,9 +12,10 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 
 # Available Plugins
 
-* Help
-* Weather
-* (Random) Tumblr image
+* Help, explains Igor
+* Weather, get the current weather and forecasts
+* (Random) Tumblr image, get a random image from a Tumblr blog
+* Status, get the current status of webservices like GitHub and Bitbucket
 
 # TODO
 
@@ -67,7 +68,7 @@ You are then returned to the function's API endpoint overview.
 4. Click on the *prod* link to configure the remaining details.
 5. Click on the link for Resources and then select the POST under your endpoint's name (for example /igor). 
 6. Select the Integration Request, and add a new Mapping Template. The Content-Type for this should be: `application/x-www-form-urlencoded`.
-7. After you've created this, change it from *Input Passthrough* to *Mapping template* and use `{ "body": $input.json("$") }` as the mapping template.
+7. After you've created this template, change it from *Input Passthrough* to *Mapping template* and use `{ "body": $input.json("$") }` as the mapping template.
 
 You've now made changes to the API, so you will have to deploy it again. There is a button for that. When deploying, make sure to deploy to the *prod* environment.
 
