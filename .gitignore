@@ -2,3 +2,5 @@ config.yml
 igor
 igor.zip
 main
+# Don't include directories created by the Wercker CLI
+_*/
