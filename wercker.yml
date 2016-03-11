@@ -1,0 +1,13 @@
+# The container definition we want to use for developing our app
+box: golang
+build:
+  steps:
+    - wercker/golint
+    - script:
+        name: go build
+        code: |
+          GOOS=linux GOARCH=amd64 go build -o main
+    - script:
+        name: go test
+        code: |
+          go test ./...
