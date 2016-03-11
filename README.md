@@ -34,34 +34,36 @@ Follow these steps to configure the slash command in Slack:
 4. Copy the token string from the integration settings and use it in the next section.
 5. Leave the page open for now
 
-## Clone and build
+## Download and configure
 
-Clone this repository (or your fork of it).
-
-```bash
-git clone https://github.com/ArjenSchwarz/igor.git
-```
-
-Copy the `config_example.yml` file to `config.yml`, and replace the placeholder in the config file with the token you copied from Slack.
-
-From the root directory of the project, run `bin/build.sh`. This will compile the project ready for Lambda, and zip everything up into a single file called `igor.zip` which you will need in the next step.
+1. Download the [latest igor zip file](https://github.com/ArjenSchwarz/igor/releases/download/latest/igor.zip)
+2. Unzip this file
+3. Edit the *config.yml* file in there by replacing the placeholder token string with yours.
+4. Make any other configuration changes you wish to make.
+5. Zip it again, making sure all 3 files are in the new zip file.
 
 ## Set up Lambda
 
-In your AWS Console, create a new Lambda function. When asked for a blueprint, skip this (the option is at the bottom).
-You can then provide the name and description to the project, and ensure that the Runtime is set to NodeJS. For the source you can upload the `igor.zip` you just compiled. You also have to set a Role. If you don't have one yet, you can select to create a Basic Execution Role and use that. 
-
-All other settings you can leave at their default values, and you can continue to create the function.
+1. In your AWS Console, create a new Lambda function. When asked for a blueprint, skip this (the option is at the bottom).
+2. Provide the name and description to the project, and ensure that the Runtime is set to NodeJS. 
+3. For the source you can upload the zipfile you just created. 
+4. Set the role. If you don't have one yet, you can select to create a Basic Execution Role and use that. Currently no other permissions are required.
+5. All other settings you can leave at their default values, and you can continue to create the function.
 
 ## API endpoint
 
-At this point you will be brought to an overview of the function. Here you will need to select the API endpoints tab and add a new API endpoint. Choose the API Gateway option and a resource name that you're happy with. Also, make sure to set the Method to **POST**, and the Security to **OPEN**.
+At this point you will be brought to an overview of the function. Here you will need to select the API endpoints tab and then follow the remaining steps.
 
-You are then returned to the function's API endpoint overview. Make a note of the API endpoint as we'll need it later and then click on the *prod* link to configure the remaining details for it.
+1. Click on add a new API endpoint. 
+2. Choose the API Gateway option and a resource name that you're happy with. Also, make sure to set the Method to **POST**, and the Security to **OPEN**.
 
-Once there, you click on the link for Resources and then select the POST under your endpoint's name (for example /igor). Here you select the Integration Request, and add a new Mapping Template. The Content-Type for this should be: **application/x-www-form-urlencoded**.
+You are then returned to the function's API endpoint overview. 
 
-After you've created this, change it from *Input Passthrough* to *Mapping template* and use **{ "body": $input.json("$") }** as the mapping template.
+3. Make a note of the API endpoint as we'll need it later.
+4. Click on the *prod* link to configure the remaining details.
+5. Click on the link for Resources and then select the POST under your endpoint's name (for example /igor). 
+6. Select the Integration Request, and add a new Mapping Template. The Content-Type for this should be: `application/x-www-form-urlencoded`.
+7. After you've created this, change it from *Input Passthrough* to *Mapping template* and use `{ "body": $input.json("$") }` as the mapping template.
 
 You've now made changes to the API, so you will have to deploy it again. There is a button for that. When deploying, make sure to deploy to the *prod* environment.
 
