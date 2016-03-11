@@ -32,7 +32,7 @@ func TestDescribe(t *testing.T) {
 }
 
 func TestWork(t *testing.T) {
-	request := slack.SlackRequest{}
+	request := slack.Request{}
 	plugin := plugins.Help()
 	// No result test
 	request.Text = "fail"

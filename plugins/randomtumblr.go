@@ -13,10 +13,17 @@ import (
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
+// RandomTumblrPlugin provides random entries from Tumblr blogs
+type RandomTumblrPlugin struct {
+	name        string
+	description string
+	Config      randomTumblrConfig
+}
+
 // RandomTumblr instantiates a RandomTumblrPlugin
-func RandomTumblr() RandomTumblrPlugin {
+func RandomTumblr() IgorPlugin {
 	pluginName := "randomTumblr"
-	pluginConfig := ParseRandomTumblrConfig()
+	pluginConfig := parseRandomTumblrConfig()
 	description := "Igor provides random entries from Tumblr blogs"
 	plugin := RandomTumblrPlugin{
 		name:        pluginName,
@@ -26,36 +33,42 @@ func RandomTumblr() RandomTumblrPlugin {
 	return plugin
 }
 
-func (r RandomTumblrPlugin) Describe() map[string]string {
+// Describe provides the triggers RandomTumblrPlugin can handle
+func (plugin RandomTumblrPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["tumblr"] = "Shows a completely random tumblr post"
-	for name, details := range r.Config.Tumblrs {
+	for name, details := range plugin.Config.Tumblrs {
 		descriptions["tumblr "+name] = fmt.Sprintf("Shows a random post from the %s tumblr", details.Name)
 	}
 	return descriptions
 }
 
-func (r RandomTumblrPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, error) {
-	response := slack.SlackResponse{}
-	var chosentumblr TumblrDetails
+// Work parses the request and ensures a request comes through if any triggers
+// are matched. Handled triggers:
+//
+// * tumblr
+// * tumblr [configured tumblr name]
+func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, error) {
+	response := slack.Response{}
+	var chosentumblr tumblrDetails
 	if len(request.Text) == 6 && request.Text == "tumblr" {
 		//Not the most efficient way of randomizing, but good enough for a small map
 		rand.Seed(time.Now().UTC().UnixNano())
 		list := []string{}
-		for name := range r.Config.Tumblrs {
+		for name := range plugin.Config.Tumblrs {
 			list = append(list, name)
 		}
 		randnr := rand.Intn(len(list))
-		chosentumblr = r.Config.Tumblrs[list[randnr]]
+		chosentumblr = plugin.Config.Tumblrs[list[randnr]]
 	} else if len(request.Text) > 6 && request.Text[:6] == "tumblr" {
 		tumblr := request.Text[7:]
-		for name, details := range r.Config.Tumblrs {
+		for name, details := range plugin.Config.Tumblrs {
 			if name == tumblr {
 				chosentumblr = details
 			}
 		}
 	}
-	if chosentumblr.Url != "" {
+	if chosentumblr.URL != "" {
 		response, err := addTumblrAttachment(response, chosentumblr)
 		if err == nil {
 			response.SetPublic()
@@ -65,8 +78,8 @@ func (r RandomTumblrPlugin) Work(request slack.SlackRequest) (slack.SlackRespons
 	return response, errors.New("No Match")
 }
 
-func addTumblrAttachment(response slack.SlackResponse, chosentumblr TumblrDetails) (slack.SlackResponse, error) {
-	url := fmt.Sprintf("%s/random", chosentumblr.Url)
+func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (slack.Response, error) {
+	url := fmt.Sprintf("%s/random", chosentumblr.URL)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		return response, err
@@ -79,18 +92,18 @@ func addTumblrAttachment(response slack.SlackResponse, chosentumblr TumblrDetail
 	}
 	attach := slack.Attachment{
 		Title:    title,
-		ImageUrl: img,
+		ImageURL: img,
 	}
 	response.AddAttachment(attach)
 	return response, err
 }
 
-// ParseRandomTumblrConfig collects the config as defined in the config file for
+// parseRandomTumblrConfig collects the config as defined in the config file for
 // the random Tumblr plugin
-func ParseRandomTumblrConfig() RandomTumblrConfig {
+func parseRandomTumblrConfig() randomTumblrConfig {
 	configFile := config.GetConfigFile()
 
-	config := RandomTumblrConfig{}
+	config := randomTumblrConfig{}
 
 	err := yaml.Unmarshal(configFile, &config)
 	if err != nil {
@@ -99,26 +112,23 @@ func ParseRandomTumblrConfig() RandomTumblrConfig {
 	return config
 }
 
-func (p RandomTumblrPlugin) Description() string {
-	return p.description
-}
-func (p RandomTumblrPlugin) Name() string {
-	return p.name
+// Description returns a global description of the plugin
+func (plugin RandomTumblrPlugin) Description() string {
+	return plugin.description
 }
 
-type RandomTumblrPlugin struct {
-	name        string
-	description string
-	Config      RandomTumblrConfig
+// Name returns the name of the plugin
+func (plugin RandomTumblrPlugin) Name() string {
+	return plugin.name
 }
 
-type RandomTumblrConfig struct {
-	Tumblrs map[string]TumblrDetails `yaml:"randomtumblr"`
+type randomTumblrConfig struct {
+	Tumblrs map[string]tumblrDetails `yaml:"randomtumblr"`
 }
 
-type TumblrDetails struct {
+type tumblrDetails struct {
 	Name     string `yaml:"name"`
-	Url      string `yaml:"url"`
+	URL      string `yaml:"url"`
 	ImgSrc   string `yaml:"image_src"`
 	TitleSrc string `yaml:"title_src"`
 }

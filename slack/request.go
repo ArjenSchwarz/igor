@@ -7,36 +7,38 @@ import (
 	"github.com/ArjenSchwarz/igor/config"
 )
 
-type SlackRequest struct {
+// Request contains the information sent through the request from Slack
+type Request struct {
 	Token       string
-	TeamId      string
+	TeamID      string
 	TeamDomain  string
-	ChannelId   string
+	ChannelID   string
 	ChannelName string
-	UserId      string
+	UserID      string
 	UserName    string
 	Command     string
 	Text        string
-	ResponseUrl string
+	ResponseURL string
 }
 
-// LoadRequestFromQuery translates the query string sent by Slack into a SlackRequest struct
-func LoadRequestFromQuery(query string) SlackRequest {
+// LoadRequestFromQuery translates the query string sent by Slack into a Request struct
+func LoadRequestFromQuery(query string) Request {
 	parsedQuery, _ := url.ParseQuery(query)
-	request := SlackRequest{}
+	request := Request{}
 	request.Token = parsedQuery.Get("token")
-	request.TeamId = parsedQuery.Get("team_id")
+	request.TeamID = parsedQuery.Get("team_id")
 	request.TeamDomain = parsedQuery.Get("team_domain")
-	request.ChannelId = parsedQuery.Get("channel_id")
+	request.ChannelID = parsedQuery.Get("channel_id")
 	request.ChannelName = parsedQuery.Get("channel_name")
-	request.UserId = parsedQuery.Get("user_id")
+	request.UserID = parsedQuery.Get("user_id")
 	request.UserName = parsedQuery.Get("user_name")
 	request.Command = parsedQuery.Get("command")
 	request.Text = parsedQuery.Get("text")
-	request.ResponseUrl = parsedQuery.Get("response_url")
+	request.ResponseURL = parsedQuery.Get("response_url")
 	return request
 }
 
-func (s *SlackRequest) Validate(config config.Config) bool {
-	return s.Token == config.Token
+// Validate ensures the request comes from the configured Slack team
+func (request *Request) Validate(config config.Config) bool {
+	return request.Token == config.Token
 }

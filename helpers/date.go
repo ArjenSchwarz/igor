@@ -4,6 +4,11 @@ import (
 	"time"
 )
 
+// RoughDay turns a unix date into a rough string approximation
+// * Anything within an hour before or after is Now
+// * Anything on the same day outside of that is Today
+// * Anything the next day is Tomorrow
+// * Anything else returns its weekday
 func RoughDay(dateInt int64) string {
 	date := time.Unix(dateInt, 0)
 	beforeMargin, _ := time.ParseDuration("-1h")

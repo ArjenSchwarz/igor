@@ -9,11 +9,13 @@ import (
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
+// HelpPlugin provides help functions
 type HelpPlugin struct {
 	name        string
 	description string
 }
 
+// Help instantiates the HelpPlugin
 func Help() IgorPlugin {
 	plugin := HelpPlugin{
 		name:        "help",
@@ -22,8 +24,14 @@ func Help() IgorPlugin {
 	return plugin
 }
 
-func (HelpPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, error) {
-	response := slack.SlackResponse{}
+// Work parses the request and ensures a request comes through if any triggers
+// are matched. Handled triggers:
+//
+//  * help
+//  * introduce yourself
+//  * tell me about yourself
+func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
+	response := slack.Response{}
 	message := strings.ToLower(request.Text)
 	switch message {
 	case "help":
@@ -39,6 +47,7 @@ func (HelpPlugin) Work(request slack.SlackRequest) (slack.SlackResponse, error) 
 	return response, nil
 }
 
+// Describe provides the triggers HelpPlugin can handle
 func (HelpPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["help"] = "This help message, providing a list of available commands"
@@ -47,9 +56,9 @@ func (HelpPlugin) Describe() map[string]string {
 	return descriptions
 }
 
-func handleHelp(response slack.SlackResponse) slack.SlackResponse {
+func handleHelp(response slack.Response) slack.Response {
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
-	allPlugins := GetPlugins(config.ReadConfig())
+	allPlugins := GetPlugins(config.GeneralConfig())
 	var buffer bytes.Buffer
 	for _, plugin := range allPlugins {
 		for command, description := range plugin.Describe() {
@@ -65,7 +74,7 @@ func handleHelp(response slack.SlackResponse) slack.SlackResponse {
 	return response
 }
 
-func handleIntroduction(response slack.SlackResponse) slack.SlackResponse {
+func handleIntroduction(response slack.Response) slack.Response {
 	response.Text = "I am Igor, reprethenting We-R-Igors."
 	response.SetPublic()
 	attach := slack.Attachment{}
@@ -77,7 +86,7 @@ func handleIntroduction(response slack.SlackResponse) slack.SlackResponse {
 	return response
 }
 
-func handleTellMe(response slack.SlackResponse) slack.SlackResponse {
+func handleTellMe(response slack.Response) slack.Response {
 	response.Text = "Originally Igors come from Überwald, but in this world our home is on GitHub."
 	attach := slack.Attachment{}
 	attach.Title = "GitHub"
@@ -91,9 +100,12 @@ func handleTellMe(response slack.SlackResponse) slack.SlackResponse {
 	return response
 }
 
+// Description returns a global description of the plugin
 func (p HelpPlugin) Description() string {
 	return p.description
 }
+
+// Name returns the name of the plugin
 func (p HelpPlugin) Name() string {
 	return p.name
 }

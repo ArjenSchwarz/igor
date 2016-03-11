@@ -5,8 +5,9 @@ import (
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
+// IgorPlugin is the interface that needs to be followed by all plugins
 type IgorPlugin interface {
-	Work(slack.SlackRequest) (slack.SlackResponse, error)
+	Work(slack.Request) (slack.Response, error)
 	Describe() map[string]string
 	Name() string
 	Description() string

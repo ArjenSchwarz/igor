@@ -3,7 +3,6 @@ package helpers_test
 import (
 	"fmt"
 	"github.com/ArjenSchwarz/igor/helpers"
-	"log"
 	"testing"
 	"time"
 )
