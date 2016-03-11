@@ -1,4 +1,4 @@
-# igor
+# Igor
 
 Igor is a Slack Slash command that acts like a bot. The code is written in Go and is designed to be run on AWS Lambda through a NodeJS wrapper. All commands are handled through plugins, making it extendable.
 
@@ -86,3 +86,5 @@ If you wish to contribute in any way (reporting bugs, requesting features, writi
 1. Fork the repository
 2. Make your changes
 3. Make a pull request that explains what it does
+
+To make plugin development easier, there is a snippet for Sublime Text included in the devtools directory. If you copy this to your User package you can easily create the skeleton for a plugin with it.
