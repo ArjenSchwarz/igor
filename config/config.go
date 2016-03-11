@@ -14,9 +14,11 @@ type Config struct {
 	Whitelist []string
 }
 
+var configFile []byte
+
 // GeneralConfig reads the configuration file and parses its general information
 func GeneralConfig() Config {
-	configFile := GetConfigFile()
+	configFile := GetRawConfig()
 	config := Config{}
 
 	err := yaml.Unmarshal(configFile, &config)
@@ -26,8 +28,19 @@ func GeneralConfig() Config {
 	return config
 }
 
+func SetRawConfig(data []byte) {
+	configFile = data
+}
+
+func GetRawConfig() []byte {
+	if len(configFile) == 0 {
+		configFile = getConfigFile()
+	}
+	return configFile
+}
+
 // GetConfigFile retrieves the contents of the config file as a byte array
-func GetConfigFile() []byte {
+func getConfigFile() []byte {
 	filename, _ := filepath.Abs("./config.yml")
 	yamlFile, err := ioutil.ReadFile(filename)
 

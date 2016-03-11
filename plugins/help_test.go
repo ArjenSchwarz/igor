@@ -1,9 +1,9 @@
 package plugins_test
 
 import (
+	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/plugins"
 	"github.com/ArjenSchwarz/igor/slack"
-	"strings"
 	"testing"
 )
 
@@ -20,10 +20,10 @@ func TestHelp(t *testing.T) {
 func TestDescribe(t *testing.T) {
 	plugin := plugins.Help()
 	descriptions := plugin.Describe()
-	if len(descriptions) != 2 {
-		t.Error("Expected 2 descriptions")
+	if len(descriptions) != 3 {
+		t.Error("Expected 3 descriptions")
 	}
-	expectedCommands := []string{"help", "introduce yourself"}
+	expectedCommands := []string{"help", "introduce yourself", "tell me about yourself"}
 	for _, command := range expectedCommands {
 		if _, ok := descriptions[command]; !ok {
 			t.Error("Expected the '" + command + "' command")
@@ -32,6 +32,8 @@ func TestDescribe(t *testing.T) {
 }
 
 func TestWork(t *testing.T) {
+	// Make sure it doesn't try to read the config file
+	config.SetRawConfig([]byte("token: testtoken"))
 	request := slack.Request{}
 	plugin := plugins.Help()
 	// No result test
@@ -49,11 +51,8 @@ func TestWork(t *testing.T) {
 	if response.Text == "" {
 		t.Error("Empty response")
 	}
-	if len(response.Attachments) != 1 {
-		t.Error("Expected an attachment")
-	}
-	if !strings.Contains(response.Attachments[0].Text, "help") {
-		t.Error("Expected help command in description")
+	if len(response.Attachments) == 0 {
+		t.Error("Expected attachments")
 	}
 	if response.IsPublic() {
 		t.Error("Help should not give a public response")

@@ -188,7 +188,7 @@ func (plugin WeatherPlugin) Name() string {
 // parseWeatherConfig collects the config as defined in the config file for
 // the weather plugin
 func parseWeatherConfig() weatherConfig {
-	configFile := config.GetConfigFile()
+	configFile := config.GetRawConfig()
 
 	config := struct {
 		Weather map[string]string `yaml:"weather"`

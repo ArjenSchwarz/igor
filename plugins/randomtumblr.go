@@ -101,7 +101,7 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 // parseRandomTumblrConfig collects the config as defined in the config file for
 // the random Tumblr plugin
 func parseRandomTumblrConfig() randomTumblrConfig {
-	configFile := config.GetConfigFile()
+	configFile := config.GetRawConfig()
 
 	config := randomTumblrConfig{}
 
