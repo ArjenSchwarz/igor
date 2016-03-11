@@ -28,10 +28,14 @@ func GeneralConfig() Config {
 	return config
 }
 
+// SetRawConfig allows you to set the raw, unparsed, configuration data.
 func SetRawConfig(data []byte) {
 	configFile = data
 }
 
+// GetRawConfig allows you to retrieve the raw, unparsed, configuration data.
+// If no configuration is present, it will pull this from the configuration
+// file.
 func GetRawConfig() []byte {
 	if len(configFile) == 0 {
 		configFile = getConfigFile()
