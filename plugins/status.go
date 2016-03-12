@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	// "sync"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -31,14 +32,23 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 	statuschecks := make(map[string]func() (slack.Attachment, error))
 	statuschecks["github"] = plugin.handleGitHubStatus
 	statuschecks["bitbucket"] = plugin.handleBitbucketStatus
+	statuschecks["npmjs"] = plugin.handleNpmjsStatus
+	statuschecks["disqus"] = plugin.handleDisqusStatus
+	statuschecks["cloudflare"] = plugin.handleCloudflareStatus
 	response := slack.Response{}
 	if request.Text == "status" {
-		for _, function := range statuschecks {
-			attachment, err := function()
-			if err != nil {
-				return response, err
-			}
-			response.AddAttachment(attachment)
+		c := make(chan slack.Attachment)
+		for name, function := range statuschecks {
+			go func(name string, function func() (slack.Attachment, error)) {
+				attachment, err := function()
+				if err != nil {
+					// return response, err
+				}
+				c <- attachment
+			}(name, function)
+		}
+		for i := 0; i < len(statuschecks); i++ {
+			response.AddAttachment(<-c)
 		}
 		response.Text = "Status results:"
 		response.SetPublic()
@@ -104,9 +114,27 @@ func (StatusPlugin) handleGitHubStatus() (slack.Attachment, error) {
 	return attachment, nil
 }
 
-func (StatusPlugin) handleBitbucketStatus() (slack.Attachment, error) {
+func (plugin StatusPlugin) handleBitbucketStatus() (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: "Bitbucket", PreText: "http://status.bitbucket.org"}
-	doc, err := goquery.NewDocument("http://status.bitbucket.org/")
+	return plugin.handleStatusPageIo(attachment)
+}
+
+func (plugin StatusPlugin) handleNpmjsStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "NPM", PreText: "http://status.npmjs.org"}
+	return plugin.handleStatusPageIo(attachment)
+}
+
+func (plugin StatusPlugin) handleDisqusStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "Disqus", PreText: "http://status.disqus.com"}
+	return plugin.handleStatusPageIo(attachment)
+}
+func (plugin StatusPlugin) handleCloudflareStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "Cloudflare", PreText: "http://cloudflarestatus.com"}
+	return plugin.handleStatusPageIo(attachment)
+}
+
+func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attachment, error) {
+	doc, err := goquery.NewDocument(attachment.PreText)
 	if err != nil {
 		return attachment, err
 	}
