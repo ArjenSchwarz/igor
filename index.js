@@ -1,5 +1,4 @@
 var child_process = require('child_process');
-var byline = require('./byline');
 
 exports.handler = function(event, context) {
   var proc = child_process.spawn('./main', [JSON.stringify(event)], { stdio: [process.stdin, 'pipe', 'pipe'] });
