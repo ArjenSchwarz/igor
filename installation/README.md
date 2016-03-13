@@ -2,7 +2,7 @@
 
 Both Slack and Lambda require details from each other. To provide the easiest step by step instructions, this therefore means you'll be switching between the two.
 
-## Configure Slack
+# Configure Slack
 
 Follow these steps to configure the slash command in Slack:
 
@@ -12,7 +12,7 @@ Follow these steps to configure the slash command in Slack:
 4. Copy the token string from the integration settings and use it in the next section.
 5. Leave the page open for now
 
-## Download and configure
+# Download and configure
 
 1. Download the [latest igor zip file](https://github.com/ArjenSchwarz/igor/releases/download/latest/igor.zip).
 2. Unzip this file.
@@ -20,11 +20,11 @@ Follow these steps to configure the slash command in Slack:
 4. Make any other configuration changes you wish to make.
 5. Zip it again, making sure all 3 files are in the new zip file.
 
-## Set up AWS
+# Set up AWS
 
 A bash script is provided to automate this part. This is a lot easier, but the manual steps are described as well in case you are unable to use this.
 
-### Automated
+## Automated
 
 The automated installation requires that you have the [AWS CLI tools](https://aws.amazon.com/cli/) installed, and assumes that the zipfile of the source is in the same directory and named `igor.zip`.
 
@@ -38,9 +38,9 @@ Example:
 ./setupaws.sh "arn:aws:iam::ACCOUNT_ID:role/IgorRole" "igor" "us-east-1"
 ```
 
-### Manually
+## Manually
 
-#### Lambda
+### Lambda
 
 1. In your AWS Console, create a new Lambda function. When asked for a blueprint, skip this (the option is at the bottom).
 2. Provide the name and description to the project, and ensure that the Runtime is set to NodeJS. 
@@ -48,7 +48,7 @@ Example:
 4. Set the role. If you don't have one yet, you can select to create a Basic Execution Role and use that. Currently no other permissions are required.
 5. All other settings you can leave at their default values, and you can continue to create the function.
 
-#### API endpoint
+### API endpoint
 
 At this point you will be brought to an overview of the function. Here you will need to select the API endpoints tab and then follow the remaining steps.
 
@@ -65,6 +65,10 @@ You are then returned to the function's API endpoint overview.
 
 You've now made changes to the API, so you will have to deploy it again. There is a button for that. When deploying, make sure to deploy to the *prod* environment.
 
-## Finish Slack
+# Finish Slack
 
 On the page you left open, fill in the URL for the API endpoint and configure everything else as you see fit before you save the integration.
+
+# Try it out
+
+In Slack (presuming you chose the trigger igor) you can now run **/igor help** to get an overview of what it can do.

@@ -29,10 +29,6 @@ Many things, including but not limited to:
 
 The AWS part of the installation can be done using an automated script, and the full installation procedure is to be found in the [installation documentation](installation/README.md).
 
-## Try it out
-
-In Slack (presuming you chose the trigger igor) you can now run **/igor help** to get an overview of what it can do.
-
 # Contribute
 
 If you wish to contribute in any way (reporting bugs, requesting features, writing code), feel free to do so either by opening Issues or Pull Request. For Pull Requests, just follow the standard pattern.
