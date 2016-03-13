@@ -38,6 +38,7 @@ build:
           mkdir dist
           cp config_example.yml config.yml
           zip -r dist/igor.zip main index.js config.yml
+          zip -r dist/installation.zip installation
           cp -R dist $ORG_SOURCE/
 deploy:
   steps:
