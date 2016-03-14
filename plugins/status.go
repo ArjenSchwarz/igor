@@ -53,7 +53,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 		}
 		response.Text = "Status results:"
 		response.SetPublic()
-	} else if request.Text[:6] == "status" && len(request.Text) > 6 {
+	} else if len(request.Text) > 6 && request.Text[:6] == "status" {
 		tocheck := request.Text[7:]
 		if function, ok := statuschecks[tocheck]; ok {
 			// Treat it as a predefined service

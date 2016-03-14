@@ -20,8 +20,8 @@ func TestHelp(t *testing.T) {
 func TestDescribe(t *testing.T) {
 	plugin := plugins.Help()
 	descriptions := plugin.Describe()
-	if len(descriptions) != 3 {
-		t.Error("Expected 3 descriptions")
+	if len(descriptions) != 4 {
+		t.Error("Expected 4 descriptions")
 	}
 	expectedCommands := []string{"help", "introduce yourself", "tell me about yourself"}
 	for _, command := range expectedCommands {
