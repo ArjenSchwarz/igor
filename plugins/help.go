@@ -40,6 +40,8 @@ func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
 		response = handleIntroduction(response)
 	case "tell me about yourself":
 		response = handleTellMe(response)
+	case "who am i?":
+		response = handleWhoAmI(request, response)
 	}
 	if response.Text == "" {
 		return response, errors.New("No match")
@@ -53,23 +55,29 @@ func (HelpPlugin) Describe() map[string]string {
 	descriptions["help"] = "This help message, providing a list of available commands"
 	descriptions["introduce yourself"] = "A public introduction of Igor"
 	descriptions["tell me about yourself"] = "Information about Igor"
+	descriptions["who am I?"] = "Development information about your account"
 	return descriptions
 }
 
 func handleHelp(response slack.Response) slack.Response {
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
 	allPlugins := GetPlugins(config.GeneralConfig())
-	var buffer bytes.Buffer
+	c := make(chan slack.Attachment)
 	for _, plugin := range allPlugins {
-		for command, description := range plugin.Describe() {
-			buffer.WriteString("- *" + command + "*: " + description + "\n")
-		}
-		attach := slack.Attachment{}
-		attach.Title = plugin.Description()
-		attach.Text = buffer.String()
-		attach.EnableMarkdownFor("text")
-		response.AddAttachment(attach)
-		buffer.Reset()
+		go func(plugin IgorPlugin) {
+			var buffer bytes.Buffer
+			for command, description := range plugin.Describe() {
+				buffer.WriteString("- *" + command + "*: " + description + "\n")
+			}
+			attach := slack.Attachment{}
+			attach.Title = plugin.Description()
+			attach.Text = buffer.String()
+			attach.EnableMarkdownFor("text")
+			c <- attach
+		}(plugin)
+	}
+	for i := 0; i < len(allPlugins); i++ {
+		response.AddAttachment(<-c)
 	}
 	return response
 }
@@ -96,6 +104,20 @@ func handleTellMe(response slack.Response) slack.Response {
 	attach = slack.Attachment{}
 	attach.Title = "ig.nore.me"
 	attach.Text = "An introductory article about Igor and its creation can be found on https://ig.nore.me"
+	response.AddAttachment(attach)
+	return response
+}
+
+func handleWhoAmI(request slack.Request, response slack.Response) slack.Response {
+	response.Text = "You are not an Igor, and you are the one who commands me. Other than that I don't know much about you. Maybe I'll recognize you if you do some evil laughing?"
+	attach := slack.Attachment{}
+	attach.Title = "Account details"
+	attach.AddField(slack.Field{Title: "Name", Value: request.UserName, Short: true})
+	attach.AddField(slack.Field{Title: "UserID", Value: request.UserID, Short: true})
+	attach.AddField(slack.Field{Title: "Channel", Value: request.ChannelName, Short: true})
+	attach.AddField(slack.Field{Title: "ChannelID", Value: request.ChannelID, Short: true})
+	attach.AddField(slack.Field{Title: "Team", Value: request.TeamDomain, Short: true})
+	attach.AddField(slack.Field{Title: "TeamID", Value: request.TeamID, Short: true})
 	response.AddAttachment(attach)
 	return response
 }
