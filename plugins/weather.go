@@ -8,8 +8,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/helpers"
 	"github.com/ArjenSchwarz/igor/slack"
@@ -188,26 +186,24 @@ func (plugin WeatherPlugin) Name() string {
 // parseWeatherConfig collects the config as defined in the config file for
 // the weather plugin
 func parseWeatherConfig() weatherConfig {
-	configFile := config.GetRawConfig()
-
-	config := struct {
+	pluginConfig := struct {
 		Weather map[string]string `yaml:"weather"`
 	}{}
+    err := config.ParsePluginConfig(&pluginConfig)
+    if err != nil {
+        panic(err)
+    }
 
-	err := yaml.Unmarshal(configFile, &config)
-	if err != nil {
-		panic(err)
-	}
 	weather := weatherConfig{Units: "metric"}
-	value, ok := config.Weather["default_city"]
+	value, ok := pluginConfig.Weather["default_city"]
 	if ok {
 		weather.DefaultCity = value
 	}
-	value, ok = config.Weather["api_token"]
+	value, ok = pluginConfig.Weather["api_token"]
 	if ok {
 		weather.APIToken = value
 	}
-	value, ok = config.Weather["units"]
+	value, ok = pluginConfig.Weather["units"]
 	if ok {
 		weather.Units = value
 	}

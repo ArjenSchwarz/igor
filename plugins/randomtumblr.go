@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"gopkg.in/yaml.v2"
 
 	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/slack"
@@ -23,7 +22,11 @@ type RandomTumblrPlugin struct {
 // RandomTumblr instantiates a RandomTumblrPlugin
 func RandomTumblr() IgorPlugin {
 	pluginName := "randomTumblr"
-	pluginConfig := parseRandomTumblrConfig()
+	pluginConfig := randomTumblrConfig{}
+    err := config.ParsePluginConfig(&pluginConfig)
+    if err != nil {
+        panic(err)
+    }
 	description := "Igor provides random entries from Tumblr blogs"
 	plugin := RandomTumblrPlugin{
 		name:        pluginName,
@@ -96,20 +99,6 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	}
 	response.AddAttachment(attach)
 	return response, err
-}
-
-// parseRandomTumblrConfig collects the config as defined in the config file for
-// the random Tumblr plugin
-func parseRandomTumblrConfig() randomTumblrConfig {
-	configFile := config.GetRawConfig()
-
-	config := randomTumblrConfig{}
-
-	err := yaml.Unmarshal(configFile, &config)
-	if err != nil {
-		panic(err)
-	}
-	return config
 }
 
 // Description returns a global description of the plugin
