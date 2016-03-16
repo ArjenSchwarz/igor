@@ -18,7 +18,7 @@ var configFile []byte
 
 // GeneralConfig reads the configuration file and parses its general information
 func GeneralConfig() Config {
-	configFile := GetRawConfig()
+	configFile := getRawConfig()
 	config := Config{}
 
 	err := yaml.Unmarshal(configFile, &config)
@@ -33,10 +33,10 @@ func SetRawConfig(data []byte) {
 	configFile = data
 }
 
-// GetRawConfig allows you to retrieve the raw, unparsed, configuration data.
+// getRawConfig allows you to retrieve the raw, unparsed, configuration data.
 // If no configuration is present, it will pull this from the configuration
 // file.
-func GetRawConfig() []byte {
+func getRawConfig() []byte {
 	if len(configFile) == 0 {
 		configFile = getConfigFile()
 	}
@@ -57,7 +57,7 @@ func getConfigFile() []byte {
 // ParsePluginConfig parses the plugin file and unmarshals it into the
 // provided interface
 func ParsePluginConfig(values interface{}) error {
-	configFile := GetRawConfig()
+	configFile := getRawConfig()
 
 	err := yaml.Unmarshal(configFile, values)
 	return err
