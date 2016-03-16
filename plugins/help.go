@@ -98,12 +98,12 @@ func handleTellMe(response slack.Response) slack.Response {
 	response.Text = "Originally Igors come from Überwald, but in this world our home is on GitHub."
 	attach := slack.Attachment{}
 	attach.Title = "GitHub"
-	attach.Text = "Main repo on https://github.com/ArjenSchwarz/igor. Feel free to contribute"
+	attach.Text = "The main repository is on https://github.com/ArjenSchwarz/igor. Feel free to contribute"
 	response.AddAttachment(attach)
 	// TODO actually write the article mentioned below
 	attach = slack.Attachment{}
 	attach.Title = "ig.nore.me"
-	attach.Text = "An introductory article about Igor and its creation can be found on https://ig.nore.me"
+	attach.Text = "Articles written about Igor and its creation can be found on https://ig.nore.me/projects/igor"
 	response.AddAttachment(attach)
 	return response
 }
