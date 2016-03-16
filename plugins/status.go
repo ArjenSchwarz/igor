@@ -76,7 +76,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 		}
 	}
 	if response.Text == "" {
-		return response, errors.New("No match")
+		return response, CreateNoMatchError("Nothing found")
 	}
 	return response, nil
 }

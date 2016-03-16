@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"bytes"
-	"errors"
 	"strings"
 
 	"github.com/ArjenSchwarz/igor/config"
@@ -44,7 +43,7 @@ func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
 		response = handleWhoAmI(request, response)
 	}
 	if response.Text == "" {
-		return response, errors.New("No match")
+		return response, CreateNoMatchError("Nothing found")
 	}
 	return response, nil
 }
@@ -100,7 +99,6 @@ func handleTellMe(response slack.Response) slack.Response {
 	attach.Title = "GitHub"
 	attach.Text = "The main repository is on https://github.com/ArjenSchwarz/igor. Feel free to contribute"
 	response.AddAttachment(attach)
-	// TODO actually write the article mentioned below
 	attach = slack.Attachment{}
 	attach.Title = "ig.nore.me"
 	attach.Text = "Articles written about Igor and its creation can be found on https://ig.nore.me/projects/igor"

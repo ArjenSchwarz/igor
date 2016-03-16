@@ -78,7 +78,7 @@ func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, er
 		}
 		return response, err
 	}
-	return response, errors.New("No match")
+	return response, CreateNoMatchError("Nothing found")
 }
 
 func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (slack.Response, error) {

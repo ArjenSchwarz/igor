@@ -25,13 +25,25 @@ func handle(body body) slack.Response {
 // determineResponse parses the responses from a list of plugin triggers
 func determineResponse(request slack.Request, config config.Config) slack.Response {
 	pluginlist := plugins.GetPlugins(config)
+	hasError := false
 	//TODO clean this up
 	for _, value := range pluginlist {
 		response, err := value.Work(request)
-		// TODO differentiate between not found and something went wrong errors
 		if err == nil {
 			return response
 		}
+		switch err.(type) {
+		case *plugins.NoMatchError:
+		default:
+			// Something actually went wrong with one of the plugins,
+			// return that something went wrong if nothing matches
+			// Don't send the actual message though
+			hasError = true
+		}
 	}
+	if hasError {
+		return slack.SomethingWrongResponse(request)
+	}
+
 	return slack.NothingFoundResponse(request)
 }

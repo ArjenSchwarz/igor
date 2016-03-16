@@ -42,3 +42,18 @@ func GetPlugins(config config.Config) map[string]IgorPlugin {
 	}
 	return plugins
 }
+
+// NoMatchError is an error type to indicate a plugin didn't find a match
+type NoMatchError struct {
+	Message string
+}
+
+// Error returns a string interpretation of the NoMatchError
+func (e *NoMatchError) Error() string {
+	return "No match found:" + e.Message
+}
+
+// CreateNoMatchError creates a new NoMatchError instance
+func CreateNoMatchError(message string) *NoMatchError {
+	return &NoMatchError{Message: message}
+}

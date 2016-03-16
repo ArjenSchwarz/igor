@@ -101,6 +101,18 @@ func ValidationErrorResponse() Response {
 	return response
 }
 
+// SomethingWrongResponse is a specific response for when an error occurred
+func SomethingWrongResponse(request Request) Response {
+	response := Response{}
+	response.Text = "Oops! Something went wrong with your request."
+	attach := Attachment{Color: "danger"}
+	attach.Text = "You tried to look for *" + request.Command + " " + request.Text + "\n"
+	attach.Text += "Unfortunately, an error occurred while trying to do so. Please try again"
+	attach.EnableMarkdownFor("text")
+	response.AddAttachment(attach)
+	return response
+}
+
 // EscapeString escapes any values as demanded by Slack
 // This means it HTML escapes '&', '<', and '>'
 // It doesn't double escape. If a string is already escaped it won't do it
