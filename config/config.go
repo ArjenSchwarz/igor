@@ -54,6 +54,8 @@ func getConfigFile() []byte {
 	return yamlFile
 }
 
+// ParsePluginConfig parses the plugin file and unmarshals it into the
+// provided interface
 func ParsePluginConfig(values interface{}) error {
 	configFile := GetRawConfig()
 
