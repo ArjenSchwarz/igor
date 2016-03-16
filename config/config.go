@@ -3,7 +3,6 @@ package config
 import (
 	"io/ioutil"
 	"path/filepath"
-// 	"errors"
 
 	"gopkg.in/yaml.v2"
 )
@@ -56,7 +55,7 @@ func getConfigFile() []byte {
 }
 
 func ParsePluginConfig(values interface{}) error {
-    configFile := GetRawConfig()
+	configFile := GetRawConfig()
 
 	err := yaml.Unmarshal(configFile, values)
 	return err

@@ -23,10 +23,10 @@ type RandomTumblrPlugin struct {
 func RandomTumblr() IgorPlugin {
 	pluginName := "randomTumblr"
 	pluginConfig := randomTumblrConfig{}
-    err := config.ParsePluginConfig(&pluginConfig)
-    if err != nil {
-        panic(err)
-    }
+	err := config.ParsePluginConfig(&pluginConfig)
+	if err != nil {
+		panic(err)
+	}
 	description := "Igor provides random entries from Tumblr blogs"
 	plugin := RandomTumblrPlugin{
 		name:        pluginName,
@@ -78,7 +78,7 @@ func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, er
 		}
 		return response, err
 	}
-	return response, errors.New("No Match")
+	return response, errors.New("No match")
 }
 
 func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (slack.Response, error) {

@@ -58,7 +58,7 @@ func (plugin WeatherPlugin) Work(request slack.Request) (slack.Response, error) 
 		return response, err
 	}
 
-	return response, errors.New("No Match")
+	return response, errors.New("No match")
 }
 
 // handleWeather handles a request for the current Weather
@@ -189,10 +189,10 @@ func parseWeatherConfig() weatherConfig {
 	pluginConfig := struct {
 		Weather map[string]string `yaml:"weather"`
 	}{}
-    err := config.ParsePluginConfig(&pluginConfig)
-    if err != nil {
-        panic(err)
-    }
+	err := config.ParsePluginConfig(&pluginConfig)
+	if err != nil {
+		panic(err)
+	}
 
 	weather := weatherConfig{Units: "metric"}
 	value, ok := pluginConfig.Weather["default_city"]
