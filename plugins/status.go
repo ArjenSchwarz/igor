@@ -5,7 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	// "sync"
+	"strconv"
+	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 
@@ -53,7 +54,15 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 		}
 		response.Text = "Status results:"
 		response.SetPublic()
+	} else if request.Text == "status aws" {
+		attachments, _ := plugin.handleAWSStatus()
+		for _, attachment := range attachments {
+			response.AddAttachment(attachment)
+		}
+		response.Text = "Status results:"
+		response.SetPublic()
 	} else if len(request.Text) > 6 && request.Text[:6] == "status" {
+
 		tocheck := request.Text[7:]
 		if function, ok := statuschecks[tocheck]; ok {
 			// Treat it as a predefined service
@@ -85,6 +94,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 func (StatusPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["status"] = "Check the status of various services"
+	descriptions["status aws"] = "Give an extensive status report on AWS"
 	descriptions["status [service]"] = "Check the status of a specific service"
 	descriptions["status [url]"] = "Checks if a website is up"
 	return descriptions
@@ -169,6 +179,52 @@ func (plugin StatusPlugin) handleDisqusStatus() (slack.Attachment, error) {
 func (plugin StatusPlugin) handleCloudflareStatus() (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: "Cloudflare", PreText: "http://cloudflarestatus.com"}
 	return plugin.handleStatusPageIo(attachment)
+}
+
+func (plugin StatusPlugin) handleAWSStatus() ([]slack.Attachment, error) {
+	attachments := []slack.Attachment{}
+	mainAttachment := slack.Attachment{Title: "AWS", PreText: "http://status.aws.amazon.com"}
+	attachments = append(attachments, mainAttachment)
+	nrResolved := 0
+	nrProblems := 0
+
+	doc, err := goquery.NewDocument(mainAttachment.PreText)
+	if err != nil {
+		return attachments, err
+	}
+	doc.Find("div#current_events_block table tr").Each(func(i int, s *goquery.Selection) {
+		message := strings.Trim(s.Find("td").Eq(2).Text(), " \n")
+		if message != "Service is operating normally" && message != "" {
+			message = strings.Replace(message, "\n            more \n        \n        \n      ", "\n", 1)
+			message = strings.Replace(message, ".", ".\n", -1)
+			service := s.Find("td").Eq(1).Text()
+			attachment := slack.Attachment{Title: service, Text: message}
+			if message[:10] == "[RESOLVED]" {
+				attachment.Color = "warning"
+				nrResolved++
+			} else {
+				attachment.Color = "danger"
+				nrProblems++
+			}
+			attachments = append(attachments, attachment)
+		}
+	})
+	if nrProblems != 0 {
+		mainAttachment.Color = "danger"
+		mainAttachment.Text = fmt.Sprintf("Nr of issues: %s", strconv.Itoa(nrProblems))
+		if nrResolved != 0 {
+			mainAttachment.Text += fmt.Sprintf("\nNr of resolved issues: %s", strconv.Itoa(nrResolved))
+		}
+	} else if nrResolved != 0 {
+		mainAttachment.Color = "warning"
+		mainAttachment.Text = fmt.Sprintf("Nr of resolved issues: %s", strconv.Itoa(nrResolved))
+	} else {
+		mainAttachment.Color = "good"
+		mainAttachment.Text = "Everything is operating normally"
+	}
+	attachments[0] = mainAttachment
+
+	return attachments, nil
 }
 
 func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attachment, error) {
