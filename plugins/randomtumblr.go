@@ -3,6 +3,7 @@ package plugins
 import (
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -40,7 +41,7 @@ func RandomTumblr() IgorPlugin {
 func (plugin RandomTumblrPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["tumblr"] = "Shows a completely random tumblr post"
-	for name, details := range plugin.Config.Tumblrs {
+	for name, details := range plugin.Config.Randomtumblr {
 		descriptions["tumblr "+name] = fmt.Sprintf("Shows a random post from the %s tumblr", details.Name)
 	}
 	return descriptions
@@ -58,14 +59,14 @@ func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, er
 		//Not the most efficient way of randomizing, but good enough for a small map
 		rand.Seed(time.Now().UTC().UnixNano())
 		list := []string{}
-		for name := range plugin.Config.Tumblrs {
+		for name := range plugin.Config.Randomtumblr {
 			list = append(list, name)
 		}
 		randnr := rand.Intn(len(list))
-		chosentumblr = plugin.Config.Tumblrs[list[randnr]]
+		chosentumblr = plugin.Config.Randomtumblr[list[randnr]]
 	} else if len(request.Text) > 6 && request.Text[:6] == "tumblr" {
 		tumblr := request.Text[7:]
-		for name, details := range plugin.Config.Tumblrs {
+		for name, details := range plugin.Config.Randomtumblr {
 			if name == tumblr {
 				chosentumblr = details
 			}
@@ -87,9 +88,9 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	if err != nil {
 		return response, err
 	}
-
-	title := doc.Find(chosentumblr.TitleSrc).Text()
-	img, exists := doc.Find(chosentumblr.ImgSrc).Attr("src")
+	log.Println(chosentumblr)
+	title := doc.Find(chosentumblr.Titlesrc).Text()
+	img, exists := doc.Find(chosentumblr.Imagesrc).Attr("src")
 	if !exists {
 		return response, errors.New("No image found")
 	}
@@ -112,12 +113,12 @@ func (plugin RandomTumblrPlugin) Name() string {
 }
 
 type randomTumblrConfig struct {
-	Tumblrs map[string]tumblrDetails `yaml:"randomtumblr"`
+	Randomtumblr map[string]tumblrDetails
 }
 
 type tumblrDetails struct {
-	Name     string `yaml:"name"`
-	URL      string `yaml:"url"`
-	ImgSrc   string `yaml:"image_src"`
-	TitleSrc string `yaml:"title_src"`
+	Name     string
+	URL      string
+	Imagesrc string
+	Titlesrc string
 }

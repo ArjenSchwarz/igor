@@ -8,10 +8,10 @@ randomtumblr:
   devops:
     name: DevOps Reactions
     url: "http://devopsreactions.tumblr.com"
-    image_src: ".item img"
-    title_src: ".post_title"
+    imagesrc: ".item img"
+    titlesrc: ".post_title"
   infosec:
     name: Security Reactions
     url: "http://securityreactions.tumblr.com"
-    image_src: "#posts .body-text img"
-    title_src: "#posts .post-content .title"
+    imagesrc: "#posts .body-text img"
+    titlesrc: "#posts .post-content .title"

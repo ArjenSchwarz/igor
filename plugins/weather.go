@@ -186,7 +186,7 @@ func (plugin WeatherPlugin) Name() string {
 // the weather plugin
 func parseWeatherConfig() weatherConfig {
 	pluginConfig := struct {
-		Weather map[string]string `yaml:"weather"`
+		Weather map[string]string
 	}{}
 
 	err := config.ParsePluginConfig(&pluginConfig)
