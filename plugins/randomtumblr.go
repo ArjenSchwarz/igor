@@ -3,7 +3,6 @@ package plugins
 import (
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -88,7 +87,6 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	if err != nil {
 		return response, err
 	}
-	log.Println(chosentumblr)
 	title := doc.Find(chosentumblr.Titlesrc).Text()
 	img, exists := doc.Find(chosentumblr.Imagesrc).Attr("src")
 	if !exists {

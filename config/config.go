@@ -1,10 +1,11 @@
 package config
 
 import (
-	"io/ioutil"
-	"path/filepath"
-
+	"encoding/json"
 	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 // Config contains general configuration details
@@ -15,15 +16,22 @@ type Config struct {
 }
 
 var configFile []byte
+var jsonConfig bool
 
 // GeneralConfig reads the configuration file and parses its general information
 func GeneralConfig() Config {
 	configFile := getRawConfig()
 	config := Config{}
-
-	err := yaml.Unmarshal(configFile, &config)
-	if err != nil {
-		panic(err)
+	if jsonConfig {
+		err := json.Unmarshal(configFile, &config)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		err := yaml.Unmarshal(configFile, &config)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return config
 }
@@ -45,13 +53,24 @@ func getRawConfig() []byte {
 
 // GetConfigFile retrieves the contents of the config file as a byte array
 func getConfigFile() []byte {
-	filename, _ := filepath.Abs("./config.yml")
-	yamlFile, err := ioutil.ReadFile(filename)
+	envConf := os.Getenv("IGOR_CONFIG")
+	if envConf != "" {
+		jsonConfig = true
+		return []byte(envConf)
+	}
+	filename, _ := filepath.Abs("./config.json")
+	if _, err := os.Stat(filename); err == nil {
+		jsonConfig = true
+	} else {
+		jsonConfig = false
+		filename, _ = filepath.Abs("./config.yml")
+	}
+	configFile, err := ioutil.ReadFile(filename)
 
 	if err != nil {
 		panic(err)
 	}
-	return yamlFile
+	return configFile
 }
 
 // ParsePluginConfig parses the plugin file and unmarshals it into the
@@ -59,6 +78,14 @@ func getConfigFile() []byte {
 func ParsePluginConfig(values interface{}) error {
 	configFile := getRawConfig()
 
-	err := yaml.Unmarshal(configFile, values)
-	return err
+	if jsonConfig {
+		if err := json.Unmarshal(configFile, &values); err != nil {
+			return err
+		}
+	} else {
+		if err := yaml.Unmarshal(configFile, &values); err != nil {
+			return err
+		}
+	}
+	return nil
 }

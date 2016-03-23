@@ -186,7 +186,7 @@ func (plugin WeatherPlugin) Name() string {
 // the weather plugin
 func parseWeatherConfig() weatherConfig {
 	pluginConfig := struct {
-		Weather map[string]string
+		Weather weatherConfig
 	}{}
 
 	err := config.ParsePluginConfig(&pluginConfig)
@@ -194,17 +194,11 @@ func parseWeatherConfig() weatherConfig {
 		panic(err)
 	}
 
-	weather := weatherConfig{Units: "metric"} //Default value for units
-	if value, exists := pluginConfig.Weather["default_city"]; exists {
-		weather.DefaultCity = value
+	if pluginConfig.Weather.Units == "" {
+		pluginConfig.Weather.Units = "metric"
 	}
-	if value, exists := pluginConfig.Weather["api_token"]; exists {
-		weather.APIToken = value
-	}
-	if value, exists := pluginConfig.Weather["units"]; exists {
-		weather.Units = value
-	}
-	return weather
+
+	return pluginConfig.Weather
 }
 
 // weatherIconURL returns the image location for a weather icon
