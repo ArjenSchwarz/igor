@@ -16,67 +16,47 @@ type Config struct {
 }
 
 var configFile []byte
-var jsonConfig bool
+var jsonConfig = true
 
 // GeneralConfig reads the configuration file and parses its general information
-func GeneralConfig() Config {
-	configFile := getRawConfig()
+func GeneralConfig() (Config, error) {
 	config := Config{}
-	if jsonConfig {
-		err := json.Unmarshal(configFile, &config)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		err := yaml.Unmarshal(configFile, &config)
-		if err != nil {
-			panic(err)
-		}
+	err := ParseConfig(&config)
+	if err != nil {
+		return config, err
 	}
-	return config
-}
-
-// SetRawConfig allows you to set the raw, unparsed, configuration data.
-func SetRawConfig(data []byte) {
-	configFile = data
-}
-
-// getRawConfig allows you to retrieve the raw, unparsed, configuration data.
-// If no configuration is present, it will pull this from the configuration
-// file.
-func getRawConfig() []byte {
-	if len(configFile) == 0 {
-		configFile = getConfigFile()
-	}
-	return configFile
+	return config, nil
 }
 
 // GetConfigFile retrieves the contents of the config file as a byte array
-func getConfigFile() []byte {
+func getConfigFile() ([]byte, error) {
+	if len(configFile) != 0 {
+		return configFile, nil
+	}
 	envConf := os.Getenv("IGOR_CONFIG")
 	if envConf != "" {
-		jsonConfig = true
-		return []byte(envConf)
+		return []byte(envConf), nil
 	}
 	filename, _ := filepath.Abs("./config.json")
-	if _, err := os.Stat(filename); err == nil {
-		jsonConfig = true
-	} else {
+	if _, err := os.Stat(filename); err != nil {
 		jsonConfig = false
 		filename, _ = filepath.Abs("./config.yml")
 	}
 	configFile, err := ioutil.ReadFile(filename)
 
 	if err != nil {
-		panic(err)
+		return configFile, err
 	}
-	return configFile
+	return configFile, nil
 }
 
-// ParsePluginConfig parses the plugin file and unmarshals it into the
+// ParseConfig parses the config file and unmarshals it into the
 // provided interface
-func ParsePluginConfig(values interface{}) error {
-	configFile := getRawConfig()
+func ParseConfig(values interface{}) error {
+	configFile, err := getConfigFile()
+	if err != nil {
+		return err
+	}
 
 	if jsonConfig {
 		if err := json.Unmarshal(configFile, &values); err != nil {

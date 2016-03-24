@@ -34,7 +34,11 @@ func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
 	message := strings.ToLower(request.Text)
 	switch message {
 	case "help":
-		response = handleHelp(response)
+		tmpresponse, err := handleHelp(response)
+		if err != nil {
+			return tmpresponse, err
+		}
+		response = tmpresponse
 	case "introduce yourself":
 		response = handleIntroduction(response)
 	case "tell me about yourself":
@@ -58,9 +62,13 @@ func (HelpPlugin) Describe() map[string]string {
 	return descriptions
 }
 
-func handleHelp(response slack.Response) slack.Response {
+func handleHelp(response slack.Response) (slack.Response, error) {
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
-	allPlugins := GetPlugins(config.GeneralConfig())
+	config, err := config.GeneralConfig()
+	if err != nil {
+		return response, err
+	}
+	allPlugins := GetPlugins(config)
 	c := make(chan slack.Attachment)
 	for _, plugin := range allPlugins {
 		go func(plugin IgorPlugin) {
@@ -78,7 +86,7 @@ func handleHelp(response slack.Response) slack.Response {
 	for i := 0; i < len(allPlugins); i++ {
 		response.AddAttachment(<-c)
 	}
-	return response
+	return response, nil
 }
 
 func handleIntroduction(response slack.Response) slack.Response {

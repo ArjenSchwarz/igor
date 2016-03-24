@@ -11,7 +11,12 @@ import (
 // It also ensures that the resulting response is properly escaped
 func handle(body body) slack.Response {
 	request := slack.LoadRequestFromQuery(body.Body)
-	config := config.GeneralConfig()
+	config, err := config.GeneralConfig()
+	if err != nil {
+		response := slack.SomethingWrongResponse(request)
+		response.Escape()
+		return response
+	}
 	response := slack.Response{}
 	if !request.Validate(config) {
 		response = slack.ValidationErrorResponse()

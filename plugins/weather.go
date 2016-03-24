@@ -21,9 +21,12 @@ type WeatherPlugin struct {
 }
 
 // Weather instantiates a WeatherPlugin
-func Weather() IgorPlugin {
+func Weather() (IgorPlugin, error) {
 	pluginName := "weather"
-	pluginConfig := parseWeatherConfig()
+	pluginConfig, err := parseWeatherConfig()
+	if err != nil {
+		return WeatherPlugin{}, err
+	}
 	description := fmt.Sprintf("Igor provides weather information for the city you specify. If no city is specified, the default city (%s) is used.", pluginConfig.DefaultCity)
 	plugin := WeatherPlugin{
 		name:        pluginName,
@@ -31,7 +34,7 @@ func Weather() IgorPlugin {
 		description: description,
 		Config:      pluginConfig,
 	}
-	return plugin
+	return plugin, nil
 }
 
 // Describe provides the triggers WeatherPlugin can handle
@@ -184,21 +187,21 @@ func (plugin WeatherPlugin) Name() string {
 
 // parseWeatherConfig collects the config as defined in the config file for
 // the weather plugin
-func parseWeatherConfig() weatherConfig {
+func parseWeatherConfig() (weatherConfig, error) {
 	pluginConfig := struct {
 		Weather weatherConfig
 	}{}
 
-	err := config.ParsePluginConfig(&pluginConfig)
+	err := config.ParseConfig(&pluginConfig)
 	if err != nil {
-		panic(err)
+		return pluginConfig.Weather, err
 	}
 
 	if pluginConfig.Weather.Units == "" {
 		pluginConfig.Weather.Units = "metric"
 	}
 
-	return pluginConfig.Weather
+	return pluginConfig.Weather, nil
 }
 
 // weatherIconURL returns the image location for a weather icon

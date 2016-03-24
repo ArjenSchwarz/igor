@@ -18,8 +18,10 @@ type IgorPlugin interface {
 func GetPlugins(config config.Config) map[string]IgorPlugin {
 	plugins := make(map[string]IgorPlugin)
 	plugins["help"] = Help()
-	plugins["weather"] = Weather()
-	plugins["tumblr"] = RandomTumblr()
+	//TODO should handle these errors somehow. Returning an error when the
+	//plugin isn't called doesn't make a lot of sense though
+	plugins["weather"], _ = Weather()
+	plugins["tumblr"], _ = RandomTumblr()
 	plugins["status"] = Status()
 
 	// Whitelist plugins

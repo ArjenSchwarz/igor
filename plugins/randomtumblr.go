@@ -20,12 +20,12 @@ type RandomTumblrPlugin struct {
 }
 
 // RandomTumblr instantiates a RandomTumblrPlugin
-func RandomTumblr() IgorPlugin {
+func RandomTumblr() (IgorPlugin, error) {
 	pluginName := "randomTumblr"
 	pluginConfig := randomTumblrConfig{}
-	err := config.ParsePluginConfig(&pluginConfig)
+	err := config.ParseConfig(&pluginConfig)
 	if err != nil {
-		panic(err)
+		return RandomTumblrPlugin{}, err
 	}
 	description := "Igor provides random entries from Tumblr blogs"
 	plugin := RandomTumblrPlugin{
@@ -33,7 +33,7 @@ func RandomTumblr() IgorPlugin {
 		description: description,
 		Config:      pluginConfig,
 	}
-	return plugin
+	return plugin, nil
 }
 
 // Describe provides the triggers RandomTumblrPlugin can handle

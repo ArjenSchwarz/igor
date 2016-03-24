@@ -1,9 +1,10 @@
 package plugins_test
 
 import (
-	"github.com/ArjenSchwarz/igor/config"
+	// "github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/plugins"
 	"github.com/ArjenSchwarz/igor/slack"
+	"os"
 	"testing"
 )
 
@@ -33,12 +34,15 @@ func TestDescribe(t *testing.T) {
 
 func TestWork(t *testing.T) {
 	// Make sure it doesn't try to read the config file
-	config.SetRawConfig([]byte("token: testtoken"))
+	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\"}")
+	if err != nil {
+		t.Error("Problem setting environment variable")
+	}
 	request := slack.Request{}
 	plugin := plugins.Help()
 	// No result test
 	request.Text = "fail"
-	_, err := plugin.Work(request)
+	_, err = plugin.Work(request)
 	if err == nil {
 		t.Error("Expected failure")
 	}
@@ -46,7 +50,7 @@ func TestWork(t *testing.T) {
 	request.Text = "help"
 	response, err := plugin.Work(request)
 	if err != nil {
-		t.Error("Unexpected error for help")
+		t.Error("Unexpected error for help", err.Error())
 	}
 	if response.Text == "" {
 		t.Error("Empty response")
