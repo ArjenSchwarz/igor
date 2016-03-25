@@ -22,7 +22,7 @@ build:
     - script:
         name: go build
         code: |
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o main
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a  -ldflags '-s' -installsuffix cgo -o main
     - script:
         name: go test
         code: |
@@ -40,6 +40,9 @@ build:
           zip -r dist/igor.zip main index.js config.yml
           zip -r dist/installation.zip installation
           cp -R dist $ORG_SOURCE/
+    - script:
+        name: prepare for Docker build
+        code: |
           cp main dockerbuild/
           cp -R dockerbuild $ORG_SOURCE/
 
@@ -54,27 +57,12 @@ deploy:
     - script:
         name: Prepare for Docker build
         code: |
-          ls -lh $WERCKER_ROOT
           mkdir -p /tmp/pipeline
           mv $WERCKER_ROOT/* /tmp/pipeline/
-          ls -lh /tmp/pipeline
-          ls -lh /tmp/pipeline/dockerbuild
           mv /tmp/pipeline/dockerbuild/* $WERCKER_ROOT
-          ls -lh $WERCKER_ROOT
-          # cp $WERCKER_ROOT/main $WERCKER_SOURCE_DIR
-          # cp $WERCKER_ROOT/main $WERCKER_OUTPUT_DIR
-          # export WERCKER_ROOT=$WERCKER_OUTPUT_DIR
-          # cp $WERCKER_SOURCE_DIR/main $WERCKER_OUTPUT_DIR
-          # ls $WERCKER_OUTPUT_DIR
-    # - script:
-    #     name: Move dist away
-    #     code: mv $WERCKER_SOURCE_DIR/dist /tmp/
     - internal/docker-scratch-push:
         username: $HUB_USERNAME
         password: $HUB_PASSWORD
         cmd: "/main -server"
         ports: "8080"
         repository: arjenschwarz/igor
-    - script:
-        name: Move things back
-        code: mv /tmp/pipeline/* $WERCKER_SOURCE_DIR
