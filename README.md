@@ -1,6 +1,6 @@
 # Igor
 
-Igor is a Slack Slash command that acts like a bot. The code is written in Go and is designed to be run on AWS Lambda through a NodeJS wrapper. All commands are handled through plugins, making it extendable.
+Igor is a Slack Slash command that acts like a bot. The code is written in Go and is designed to be run on AWS Lambda through a NodeJS wrapper or as a Docker container. All commands are handled through plugins, making it extendable.
 
 The name is based on Sir Terry Pratchett's wonderful use of Dr. Frankenstein's servant. No disrespect intended.
 
@@ -12,22 +12,18 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 
 # Available Plugins
 
-* Help, explains Igor
-* Weather, get the current weather and forecasts
-* (Random) Tumblr image, get a random image from a Tumblr blog
-* Status, get the current status of webservices like GitHub and Bitbucket
+* [Help](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Help), explains Igor
+* [Weather](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Weather), get the current weather and forecasts
+* [(Random) Tumblr](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-(Random)-Tumblr) image, get a random image from a Tumblr blog
+* [Status](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Status), get the current status of webservices like GitHub and Bitbucket
 
 # TODO
 
-Many things, including but not limited to:
-
-* Better documentation
-* More plugins
-* More tests
+Many things, have a look at the [Roadmap](https://github.com/ArjenSchwarz/igor/wiki/Roadmap) for the current ideas.
 
 # Installation
 
-The AWS part of the installation can be done using an automated script, and the full installation procedure is to be found in the [installation documentation](installation/README.md).
+Please have a look at the [Wiki](https://github.com/ArjenSchwarz/igor/wiki) for a full list of installation and running options.
 
 # Contribute
 
