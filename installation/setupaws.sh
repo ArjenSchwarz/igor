@@ -22,21 +22,21 @@ APINAME="${NAME}Api"
 
 # Create the Lambda function
 echo "Creating the Lambda function"
-aws lambda create-function --function-name "${NAME}" --runtime nodejs --role ${ARN_ROLE} --handler index.handler --zip-file fileb://igor.zip
-LAMBDAARN=$(aws lambda list-functions --query "Functions[?FunctionName==\`${NAME}\`].FunctionArn" --output text)
+aws lambda create-function --function-name "${NAME}" --runtime nodejs --role ${ARN_ROLE} --handler index.handler --zip-file fileb://igor.zip --region ${REGION}
+LAMBDAARN=$(aws lambda list-functions --query "Functions[?FunctionName==\`${NAME}\`].FunctionArn" --output text --region ${REGION})
 
 # Create the API Gateway
 echo "Creating the API Gateway"
-aws apigateway create-rest-api --name "${APINAME}" --description "Api for ${NAME}"
-APIID=$(aws apigateway get-rest-apis --query "items[?name==\`${APINAME}\`].id" --output text)
-PARENTRESOURCEID=$(aws apigateway get-resources --rest-api-id ${APIID} --query 'items[?path==`/`].id' --output text)
+aws apigateway create-rest-api --name "${APINAME}" --description "Api for ${NAME}" --region ${REGION}
+APIID=$(aws apigateway get-rest-apis --query "items[?name==\`${APINAME}\`].id" --output text --region ${REGION})
+PARENTRESOURCEID=$(aws apigateway get-resources --rest-api-id ${APIID} --query 'items[?path==`/`].id' --output text --region ${REGION})
 
 # Add the resource
-aws apigateway create-resource --rest-api-id ${APIID} --parent-id ${PARENTRESOURCEID} --path-part igor
-RESOURCEID=$(aws apigateway get-resources --rest-api-id ${APIID} --query 'items[?path==`/igor`].id' --output text)
+aws apigateway create-resource --rest-api-id ${APIID} --parent-id ${PARENTRESOURCEID} --path-part igor --region ${REGION}
+RESOURCEID=$(aws apigateway get-resources --rest-api-id ${APIID} --query 'items[?path==`/igor`].id' --output text --region ${REGION})
 
 # Add the POST method
-aws apigateway put-method --rest-api-id ${APIID} --resource-id ${RESOURCEID} --http-method POST --authorization-type NONE
+aws apigateway put-method --rest-api-id ${APIID} --resource-id ${RESOURCEID} --http-method POST --authorization-type NONE --region ${REGION}
 
 # Method request config
 aws apigateway put-integration --rest-api-id ${APIID} \
@@ -45,7 +45,8 @@ aws apigateway put-integration --rest-api-id ${APIID} \
 --type AWS \
 --integration-http-method POST \
 --uri arn:aws:apigateway:${REGION}:lambda:path/2015-03-31/functions/${LAMBDAARN}/invocations \
---request-templates '{"application/x-www-form-urlencoded":"{\"body\": $input.json(\"$\")}"}'
+--request-templates '{"application/x-www-form-urlencoded":"{\"body\": $input.json(\"$\")}"}' \
+--region ${REGION}
 
 # Method response config
 aws apigateway put-method-response \
@@ -53,35 +54,40 @@ aws apigateway put-method-response \
 --resource-id ${RESOURCEID} \
 --http-method POST \
 --status-code 200 \
---response-models "{}"
+--response-models "{}" \
+--region ${REGION}
 
 aws apigateway put-integration-response \
 --rest-api-id ${APIID} \
 --resource-id ${RESOURCEID} \
 --http-method POST \
 --status-code 200 \
---selection-pattern ".*"
+--selection-pattern ".*" \
+--region ${REGION}
 
 # Deploy Gateway
 aws apigateway create-deployment \
 --rest-api-id ${APIID} \
---stage-name prod
+--stage-name prod \
+--region ${REGION}
 
 # Create permissions
-APIARN=$(echo ${LAMBDAARN} | sed -e 's/lambda/execute-api/' -e "s/function:igorGang/${APIID}/")
+APIARN=$(echo ${LAMBDAARN} | sed -e 's/lambda/execute-api/' -e "s/function:${NAME}/${APIID}/")
 aws lambda add-permission \
 --function-name ${NAME} \
 --statement-id apigateway-igor-test-2 \
 --action lambda:InvokeFunction \
 --principal apigateway.amazonaws.com \
---source-arn "${APIARN}/*/POST/igor"
+--source-arn "${APIARN}/*/POST/igor" \
+--region ${REGION}
 
 aws lambda add-permission \
 --function-name ${NAME} \
 --statement-id apigateway-igor-prod-2 \
 --action lambda:InvokeFunction \
 --principal apigateway.amazonaws.com \
---source-arn "${APIARN}/prod/POST/igor"
+--source-arn "${APIARN}/prod/POST/igor" \
+--region ${REGION}
 
 echo "The url you have to use in your Slack settings is:
 https://${APIID}.execute-api.${REGION}.amazonaws.com/prod/igor"
