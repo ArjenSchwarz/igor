@@ -22,7 +22,7 @@ func GetPlugins(config config.Config) map[string]IgorPlugin {
 	//plugin isn't called doesn't make a lot of sense though
 	plugins["weather"], _ = Weather()
 	plugins["tumblr"], _ = RandomTumblr()
-	plugins["status"] = Status()
+	plugins["status"], _ = Status()
 
 	// Whitelist plugins
 	if config.Whitelist != nil {

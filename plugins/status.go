@@ -10,6 +10,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
@@ -17,20 +18,26 @@ import (
 type StatusPlugin struct {
 	name        string
 	description string
+	Config      statusConfig
+	Checks      map[string]func() (slack.Attachment, error)
+	MainChecks  map[string]func() (slack.Attachment, error)
+}
+
+type statusConfig struct {
+	Main []string
 }
 
 // Status instantiates the StatusPlugin
-func Status() IgorPlugin {
+func Status() (IgorPlugin, error) {
+	pluginConfig, err := parseStatusConfig()
+	if err != nil {
+		return StatusPlugin{}, err
+	}
 	plugin := StatusPlugin{
 		name:        "status",
 		description: "Igor provides status reports for various services",
+		Config:      pluginConfig,
 	}
-	return plugin
-}
-
-// Work parses the request and ensures a request comes through if any triggers
-// are matched. Handled triggers:
-func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 	statuschecks := make(map[string]func() (slack.Attachment, error))
 	statuschecks["github"] = plugin.handleGitHubStatus
 	statuschecks["bitbucket"] = plugin.handleBitbucketStatus
@@ -38,10 +45,32 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 	statuschecks["disqus"] = plugin.handleDisqusStatus
 	statuschecks["cloudflare"] = plugin.handleCloudflareStatus
 	statuschecks["aws"] = plugin.handleShortAWSStatus
+	statuschecks["travis"] = plugin.handleTravisCIStatus
+	plugin.Checks = statuschecks
+
+	if len(pluginConfig.Main) == 0 {
+		plugin.MainChecks = statuschecks
+	} else {
+		mainchecks := make(map[string]func() (slack.Attachment, error))
+		for _, check := range pluginConfig.Main {
+			if val, ok := statuschecks[check]; ok {
+				mainchecks[check] = val
+			}
+		}
+		plugin.MainChecks = mainchecks
+	}
+
+	return plugin, nil
+}
+
+// Work parses the request and ensures a request comes through if any triggers
+// are matched. Handled triggers:
+func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
+	statuschecks := plugin.Checks
 	response := slack.Response{}
 	if request.Text == "status" {
 		c := make(chan slack.Attachment)
-		for _, function := range statuschecks {
+		for _, function := range plugin.MainChecks {
 			go func(function func() (slack.Attachment, error)) {
 				attachment, err := function()
 				if err != nil {
@@ -50,7 +79,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 				c <- attachment
 			}(function)
 		}
-		for i := 0; i < len(statuschecks); i++ {
+		for i := 0; i < len(plugin.MainChecks); i++ {
 			response.AddAttachment(<-c)
 		}
 		response.Text = "Status results:"
@@ -92,11 +121,16 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 }
 
 // Describe provides the triggers StatusPlugin can handle
-func (StatusPlugin) Describe() map[string]string {
+func (plugin StatusPlugin) Describe() map[string]string {
+	var servicelist []string
+	for service := range plugin.Checks {
+		servicelist = append(servicelist, service)
+	}
+	services := strings.Join(servicelist, ", ")
 	descriptions := make(map[string]string)
-	descriptions["status"] = "Check the status of various services"
-	descriptions["status aws"] = "Give a detailed status report on AWS"
-	descriptions["status [service]"] = "Check the status of a specific service"
+	descriptions["status"] = "Check the status of selected services"
+	descriptions["status aws"] = "Give a more detailed status report on AWS"
+	descriptions["status [service]"] = fmt.Sprintf("Check the status of the service, available services: %s", services)
 	descriptions["status [url]"] = "Checks if a website is up"
 	return descriptions
 }
@@ -177,8 +211,14 @@ func (plugin StatusPlugin) handleDisqusStatus() (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: "Disqus", PreText: "http://status.disqus.com"}
 	return plugin.handleStatusPageIo(attachment)
 }
+
 func (plugin StatusPlugin) handleCloudflareStatus() (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: "Cloudflare", PreText: "http://cloudflarestatus.com"}
+	return plugin.handleStatusPageIo(attachment)
+}
+
+func (plugin StatusPlugin) handleTravisCIStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "Travis CI", PreText: "https://www.traviscistatus.com"}
 	return plugin.handleStatusPageIo(attachment)
 }
 
@@ -283,4 +323,17 @@ func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attac
 		attachment.Color = "danger"
 	}
 	return attachment, nil
+}
+
+func parseStatusConfig() (statusConfig, error) {
+	pluginConfig := struct {
+		Status statusConfig
+	}{}
+
+	err := config.ParseConfig(&pluginConfig)
+	if err != nil {
+		return pluginConfig.Status, err
+	}
+
+	return pluginConfig.Status, nil
 }
