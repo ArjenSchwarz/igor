@@ -54,6 +54,7 @@ func getConfigFile() ([]byte, error) {
 // provided interface
 func ParseConfig(values interface{}) error {
 	configFile, err := getConfigFile()
+
 	if err != nil {
 		return err
 	}
@@ -63,7 +64,7 @@ func ParseConfig(values interface{}) error {
 			return err
 		}
 	} else {
-		if err := yaml.Unmarshal(configFile, &values); err != nil {
+		if err := yaml.Unmarshal(configFile, values); err != nil {
 			return err
 		}
 	}
