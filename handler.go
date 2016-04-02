@@ -31,10 +31,18 @@ func handle(body body) slack.Response {
 func determineResponse(request slack.Request, config config.Config) slack.Response {
 	pluginlist := plugins.GetPlugins(config)
 	hasError := false
+	forcePublic := false
+	if request.Text[0] == '!' {
+		forcePublic = true
+		request.Text = request.Text[1:]
+	}
 	//TODO clean this up
 	for _, value := range pluginlist {
 		response, err := value.Work(request)
 		if err == nil {
+			if forcePublic {
+				response.SetPublic()
+			}
 			return response
 		}
 		switch err.(type) {

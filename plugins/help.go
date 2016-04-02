@@ -63,7 +63,9 @@ func (HelpPlugin) Describe() map[string]string {
 }
 
 func handleHelp(response slack.Response) (slack.Response, error) {
-	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?"
+	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?\n"
+	response.Text += "You can choose from any of the below listed commands.\n"
+	response.Text += "Also, if you prefix a command with an exclamation point, like *!help*, the result will be shown publicly."
 	config, err := config.GeneralConfig()
 	if err != nil {
 		return response, err
