@@ -37,6 +37,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 	statuschecks["npmjs"] = plugin.handleNpmjsStatus
 	statuschecks["disqus"] = plugin.handleDisqusStatus
 	statuschecks["cloudflare"] = plugin.handleCloudflareStatus
+	statuschecks["aws"] = plugin.handleShortAWSStatus
 	response := slack.Response{}
 	if request.Text == "status" {
 		c := make(chan slack.Attachment)
@@ -94,7 +95,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 func (StatusPlugin) Describe() map[string]string {
 	descriptions := make(map[string]string)
 	descriptions["status"] = "Check the status of various services"
-	descriptions["status aws"] = "Give an extensive status report on AWS"
+	descriptions["status aws"] = "Give a detailed status report on AWS"
 	descriptions["status [service]"] = "Check the status of a specific service"
 	descriptions["status [url]"] = "Checks if a website is up"
 	return descriptions
@@ -225,6 +226,46 @@ func (plugin StatusPlugin) handleAWSStatus() ([]slack.Attachment, error) {
 	attachments[0] = mainAttachment
 
 	return attachments, nil
+}
+
+func (plugin StatusPlugin) handleShortAWSStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "AWS", PreText: "http://status.aws.amazon.com"}
+	nrResolved := 0
+	nrProblems := 0
+
+	doc, err := goquery.NewDocument(attachment.PreText)
+	if err != nil {
+		return attachment, err
+	}
+	doc.Find("div#current_events_block table tr").Each(func(i int, s *goquery.Selection) {
+		message := strings.Trim(s.Find("td").Eq(2).Text(), " \n")
+		if message != "Service is operating normally" && message != "" {
+			message = strings.Replace(message, "\n            more \n        \n        \n      ", "\n", 1)
+			message = strings.Replace(message, ".", ".\n", -1)
+			if message[:10] == "[RESOLVED]" {
+				nrResolved++
+			} else {
+				nrProblems++
+			}
+		}
+	})
+	if nrProblems != 0 {
+		attachment.Color = "danger"
+		attachment.Text = fmt.Sprintf("Nr of issues: %s", strconv.Itoa(nrProblems))
+		if nrResolved != 0 {
+			attachment.Text += fmt.Sprintf("\nNr of resolved issues: %s", strconv.Itoa(nrResolved))
+		}
+		attachment.Text += "\nTry *status aws* for more details."
+	} else if nrResolved != 0 {
+		attachment.Color = "warning"
+		attachment.Text = fmt.Sprintf("Nr of resolved issues: %s", strconv.Itoa(nrResolved))
+		attachment.Text += "\nTry *status aws* for more details."
+	} else {
+		attachment.Color = "good"
+		attachment.Text = "Everything is operating normally"
+	}
+
+	return attachment, nil
 }
 
 func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attachment, error) {
