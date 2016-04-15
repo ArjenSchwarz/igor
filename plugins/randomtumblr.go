@@ -87,7 +87,10 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	if err != nil {
 		return response, err
 	}
-	title := doc.Find(chosentumblr.Titlesrc).Text()
+	title := ""
+	if chosentumblr.Titlesrc != "" {
+		title = doc.Find(chosentumblr.Titlesrc).Text()
+	}
 	img, exists := doc.Find(chosentumblr.Imagesrc).Attr("src")
 	if !exists {
 		return response, errors.New("No image found")
@@ -95,6 +98,9 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	attach := slack.Attachment{
 		Title:    title,
 		ImageURL: img,
+	}
+	if title == "" {
+		attach.Title = chosentumblr.Name
 	}
 	response.AddAttachment(attach)
 	return response, err
