@@ -46,6 +46,7 @@ func Status() (IgorPlugin, error) {
 	statuschecks["cloudflare"] = plugin.handleCloudflareStatus
 	statuschecks["aws"] = plugin.handleShortAWSStatus
 	statuschecks["travis"] = plugin.handleTravisCIStatus
+	statuschecks["docker"] = plugin.handleDockerStatus
 	plugin.Checks = statuschecks
 
 	if len(pluginConfig.Main) == 0 {
@@ -308,6 +309,11 @@ func (plugin StatusPlugin) handleShortAWSStatus() (slack.Attachment, error) {
 	return attachment, nil
 }
 
+func (plugin StatusPlugin) handleDockerStatus() (slack.Attachment, error) {
+	attachment := slack.Attachment{Title: "Docker", PreText: "http://status.status.io"}
+	return plugin.handleStatusIo(attachment)
+}
+
 func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attachment, error) {
 	doc, err := goquery.NewDocument(attachment.PreText)
 	if err != nil {
@@ -319,6 +325,20 @@ func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attac
 		attachment.Color = "good"
 	} else if pageStatus.HasClass("status-yellow") {
 		attachment.Color = "warning"
+	} else {
+		attachment.Color = "danger"
+	}
+	return attachment, nil
+}
+
+func (StatusPlugin) handleStatusIo(attachment slack.Attachment) (slack.Attachment, error) {
+	doc, err := goquery.NewDocument(attachment.PreText)
+	if err != nil {
+		return attachment, err
+	}
+	attachment.Text = doc.Find("#statusbar_text").Text()
+	if attachment.Text == "All Systems Operational" {
+		attachment.Color = "good"
 	} else {
 		attachment.Color = "danger"
 	}
