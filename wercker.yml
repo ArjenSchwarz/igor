@@ -93,12 +93,12 @@ deploy:
         repository: arjenschwarz/igor
   lambda:
     - arjen/lambda:
-      access_key: $AWS_ACCESS_KEY
-      secret_key: $AWS_SECRET_KEY
-      function_name: igor
-      filepath: $WERCKER_SOURCE_DIR/zips/ignoreme.zip
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        function_name: igor
+        filepath: $WERCKER_SOURCE_DIR/zips/ignoreme.zip
     - arjen/lambda:
-      access_key: $AWS_ACCESS_KEY
-      secret_key: $AWS_SECRET_KEY
-      function_name: igorGang
-      filepath: $WERCKER_SOURCE_DIR/zips/gang.zip
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        function_name: igorGang
+        filepath: $WERCKER_SOURCE_DIR/zips/gang.zip
