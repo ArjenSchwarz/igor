@@ -33,13 +33,38 @@ build:
     # This then needs to be copied to the original source dir
     # to ensure it's present in the deploy step
     - script:
-        name: create zip file
+        name: create GitHub zip file
         code: |
           mkdir dist
           cp config_example.yml config.yml
           zip -r dist/igor.zip main index.js config.yml
           zip -r dist/installation.zip installation
           cp -R dist $ORG_SOURCE/
+    - script:
+        name: Prepare for personal releases
+        code: |
+          mkdir -p personal/ignoreme personal/gang zips
+          cp main index.js personal/ignoreme
+          cp main index.js personal/gang
+    - arjen/s3get:
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        bucket: igor-configs
+        key: ignoreme.yml
+        filename: $WERCKER_SOURCE_DIR/personal/ignoreme/config.yml
+    - arjen/s3get:
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        bucket: igor-configs
+        key: gang.yml
+        filename: $WERCKER_SOURCE_DIR/personal/gang/config.yml
+    - script:
+        name: Create personal releases
+        code: |
+          zip -j zips/ignoreme.zip $WERCKER_SOURCE_DIR/personal/ignoreme/*
+          zip -j zips/gang.zip $WERCKER_SOURCE_DIR/personal/gang/*
+          cp -R zips $ORG_SOURCE
+          ls $ORG_SOURCE/zips
     - script:
         name: prepare for Docker build
         code: |
@@ -66,3 +91,14 @@ deploy:
         cmd: "/main -server"
         ports: "8080"
         repository: arjenschwarz/igor
+  lambda:
+    - arjen/lambda:
+      access_key: $AWS_ACCESS_KEY
+      secret_key: $AWS_SECRET_KEY
+      function_name: igor
+      filepath: $WERCKER_SOURCE_DIR/zips/ignoreme.zip
+    - arjen/lambda:
+      access_key: $AWS_ACCESS_KEY
+      secret_key: $AWS_SECRET_KEY
+      function_name: igorGang
+      filepath: $WERCKER_SOURCE_DIR/zips/gang.zip
