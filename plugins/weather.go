@@ -72,6 +72,9 @@ func (plugin *WeatherPlugin) handleWeather(request slack.Request) (slack.Respons
 		city = plugin.Config.DefaultCity
 	}
 	city = url.QueryEscape(city)
+	if isSpecialWeather(city) {
+		return getSpecialWeather(city)
+	}
 	response := slack.Response{}
 	url := fmt.Sprintf("%sfind?APPID=%s&q=%s&units=%s",
 		plugin.Source, plugin.Config.APIToken, city, plugin.Config.Units)
@@ -232,6 +235,56 @@ func formatWind(speed float64, units string) string {
 		value = "mph"
 	}
 	return fmt.Sprintf("%s %s", strconv.FormatFloat(speed, 'f', 0, 64), value)
+}
+
+func isSpecialWeather(location string) bool {
+	locations := getSpecialWeatherMap()
+	if _, ok := locations[location]; ok {
+		return true
+	}
+	return false
+}
+
+func getSpecialWeather(location string) (slack.Response, error) {
+	response := slack.Response{Text: "Your weather request"}
+
+	locations := getSpecialWeatherMap()
+	if val, ok := locations[location]; ok {
+		response.AddAttachment(val)
+		return response, nil
+	}
+	return response, CreateNoMatchError("No special location")
+}
+
+func getSpecialWeatherMap() map[string]slack.Attachment {
+	plugins := make(map[string]slack.Attachment)
+	hothResponse := slack.Attachment{
+		Title:    "Hoth, A galaxy far far away (A long time ago)",
+		Text:     "Tauntaun freezing cold",
+		ThumbURL: weatherIconURL("13d"),
+	}
+	plugins["hoth"] = hothResponse
+	tatResponse := slack.Attachment{
+		Title:    "Tatooine, A galaxy far far away (A long time ago)",
+		Text:     "So hot milk turns blue",
+		ThumbURL: weatherIconURL("01d"),
+	}
+	plugins["tatooine"] = tatResponse
+
+	yakkuResponse := slack.Attachment{
+		Title:    "Yakku, A galaxy far far away (A long time ago)",
+		Text:     "Hot enough to make Star Destroyers crash",
+		ThumbURL: weatherIconURL("01d"),
+	}
+	plugins["yakku"] = yakkuResponse
+
+	dagobahResponse := slack.Attachment{
+		Title:    "Dagobah, A galaxy far far away (A long time ago)",
+		Text:     "Hot and humid with no visibility. Not recommended to fly",
+		ThumbURL: weatherIconURL("09d"),
+	}
+	plugins["dagobah"] = dagobahResponse
+	return plugins
 }
 
 type (
