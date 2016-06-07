@@ -27,7 +27,7 @@ func Weather() (IgorPlugin, error) {
 	if err != nil {
 		return WeatherPlugin{}, err
 	}
-	description := fmt.Sprintf("Igor provides weather information for the city you specify. If no city is specified, the default city (%s) is used.", pluginConfig.DefaultCity)
+	description := "Igor provides weather information for the city you specify. If no city is specified, the default city is used."
 	plugin := WeatherPlugin{
 		name:        pluginName,
 		Source:      "http://api.openweathermap.org/data/2.5/",
@@ -69,7 +69,7 @@ func (plugin *WeatherPlugin) handleWeather(request slack.Request) (slack.Respons
 	if len(request.Text) > 8 {
 		city = request.Text[8:]
 	} else {
-		city = plugin.Config.DefaultCity
+		city = plugin.Config.determineDefaultWeatherCity(request)
 	}
 	city = url.QueryEscape(city)
 	if isSpecialWeather(city) {
@@ -124,7 +124,7 @@ func (plugin *WeatherPlugin) handleForecast(request slack.Request) (slack.Respon
 	if len(request.Text) > 9 {
 		city = request.Text[9:]
 	} else {
-		city = plugin.Config.DefaultCity
+		city = plugin.Config.determineDefaultWeatherCity(request)
 	}
 	city = url.QueryEscape(city)
 	response := slack.Response{}
@@ -176,6 +176,20 @@ func (plugin *WeatherPlugin) handleForecast(request slack.Request) (slack.Respon
 	}
 
 	return response, nil
+}
+
+// determineDefaultWeatherCity checks if there are defaults for specific channels
+// and returns those.
+func (config weatherConfig) determineDefaultWeatherCity(request slack.Request) string {
+	if config.ChannelCity != nil {
+		if val, ok := config.ChannelCity[request.ChannelID]; ok {
+			return val
+		}
+		if val, ok := config.ChannelCity[request.ChannelName]; ok {
+			return val
+		}
+	}
+	return config.DefaultCity
 }
 
 // Description returns a global description of the plugin
@@ -344,5 +358,6 @@ type (
 		DefaultCity string
 		APIToken    string
 		Units       string
+		ChannelCity map[string]string
 	}
 )
