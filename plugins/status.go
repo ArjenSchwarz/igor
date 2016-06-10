@@ -21,6 +21,7 @@ type StatusPlugin struct {
 	Config      statusConfig
 	Checks      map[string]func() (slack.Attachment, error)
 	MainChecks  map[string]func() (slack.Attachment, error)
+	request     slack.Request
 }
 
 type statusConfig struct {
@@ -28,7 +29,7 @@ type statusConfig struct {
 }
 
 // Status instantiates the StatusPlugin
-func Status() (IgorPlugin, error) {
+func Status(request slack.Request) (IgorPlugin, error) {
 	pluginConfig, err := parseStatusConfig()
 	if err != nil {
 		return StatusPlugin{}, err
@@ -37,6 +38,7 @@ func Status() (IgorPlugin, error) {
 		name:        "status",
 		description: "Igor provides status reports for various services",
 		Config:      pluginConfig,
+		request:     request,
 	}
 	statuschecks := make(map[string]func() (slack.Attachment, error))
 	statuschecks["github"] = plugin.handleGitHubStatus
@@ -66,10 +68,10 @@ func Status() (IgorPlugin, error) {
 
 // Work parses the request and ensures a request comes through if any triggers
 // are matched. Handled triggers:
-func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
+func (plugin StatusPlugin) Work() (slack.Response, error) {
 	statuschecks := plugin.Checks
 	response := slack.Response{}
-	if request.Text == "status" {
+	if plugin.Message() == "status" {
 		c := make(chan slack.Attachment)
 		for _, function := range plugin.MainChecks {
 			go func(function func() (slack.Attachment, error)) {
@@ -85,16 +87,16 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 		}
 		response.Text = "Status results:"
 		response.SetPublic()
-	} else if request.Text == "status aws" {
+	} else if plugin.Message() == "status aws" {
 		attachments, _ := plugin.handleAWSStatus()
 		for _, attachment := range attachments {
 			response.AddAttachment(attachment)
 		}
 		response.Text = "Status results:"
 		response.SetPublic()
-	} else if len(request.Text) > 6 && request.Text[:6] == "status" {
+	} else if len(plugin.Message()) > 6 && plugin.Message()[:6] == "status" {
 
-		tocheck := request.Text[7:]
+		tocheck := plugin.Message()[7:]
 		if function, ok := statuschecks[tocheck]; ok {
 			// Treat it as a predefined service
 			attachment, err := function()
@@ -106,7 +108,7 @@ func (plugin StatusPlugin) Work(request slack.Request) (slack.Response, error) {
 			response.SetPublic()
 		} else {
 			// Treat it as a website
-			attachment, err := plugin.handleDomain(request.Text[7:])
+			attachment, err := plugin.handleDomain(plugin.Message()[7:])
 			if err != nil {
 				return response, err
 			}
@@ -144,6 +146,10 @@ func (plugin StatusPlugin) Description() string {
 // Name returns the name of the plugin
 func (plugin StatusPlugin) Name() string {
 	return plugin.name
+}
+
+func (plugin StatusPlugin) Message() string {
+	return plugin.request.Text
 }
 
 func (StatusPlugin) handleDomain(domain string) (slack.Attachment, error) {

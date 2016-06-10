@@ -29,7 +29,7 @@ func handle(body body) slack.Response {
 
 // determineResponse parses the responses from a list of plugin triggers
 func determineResponse(request slack.Request, config config.Config) slack.Response {
-	pluginlist := plugins.GetPlugins(config)
+	pluginlist := plugins.GetPlugins(request, config)
 	hasError := false
 	forcePublic := false
 	if request.Text[0] == '!' {
@@ -38,7 +38,7 @@ func determineResponse(request slack.Request, config config.Config) slack.Respon
 	}
 	//TODO clean this up
 	for _, value := range pluginlist {
-		response, err := value.Work(request)
+		response, err := value.Work()
 		if err == nil {
 			if forcePublic {
 				response.SetPublic()

@@ -12,13 +12,15 @@ import (
 type HelpPlugin struct {
 	name        string
 	description string
+	request     slack.Request
 }
 
 // Help instantiates the HelpPlugin
-func Help() IgorPlugin {
+func Help(request slack.Request) IgorPlugin {
 	plugin := HelpPlugin{
 		name:        "help",
 		description: "I provide help with the following commands",
+		request:     request,
 	}
 	return plugin
 }
@@ -29,12 +31,11 @@ func Help() IgorPlugin {
 //  * help
 //  * introduce yourself
 //  * tell me about yourself
-func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
+func (plugin HelpPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
-	message := strings.ToLower(request.Text)
-	switch message {
+	switch plugin.Message() {
 	case "help":
-		tmpresponse, err := handleHelp(response)
+		tmpresponse, err := plugin.handleHelp(response)
 		if err != nil {
 			return tmpresponse, err
 		}
@@ -44,7 +45,7 @@ func (HelpPlugin) Work(request slack.Request) (slack.Response, error) {
 	case "tell me about yourself":
 		response = handleTellMe(response)
 	case "who am i?":
-		response = handleWhoAmI(request, response)
+		response = handleWhoAmI(plugin.request, response)
 	}
 	if response.Text == "" {
 		return response, CreateNoMatchError("Nothing found")
@@ -62,7 +63,7 @@ func (HelpPlugin) Describe() map[string]string {
 	return descriptions
 }
 
-func handleHelp(response slack.Response) (slack.Response, error) {
+func (plugin HelpPlugin) handleHelp(response slack.Response) (slack.Response, error) {
 	response.Text = "I can see that you're trying to find an Igor, would you like some help with that?\n"
 	response.Text += "You can choose from any of the below listed commands.\n"
 	response.Text += "Also, if you prefix a command with an exclamation point, like *!help*, the result will be shown publicly."
@@ -70,7 +71,7 @@ func handleHelp(response slack.Response) (slack.Response, error) {
 	if err != nil {
 		return response, err
 	}
-	allPlugins := GetPlugins(config)
+	allPlugins := GetPlugins(plugin.request, config)
 	c := make(chan slack.Attachment)
 	for _, plugin := range allPlugins {
 		go func(plugin IgorPlugin) {
@@ -138,4 +139,8 @@ func (p HelpPlugin) Description() string {
 // Name returns the name of the plugin
 func (p HelpPlugin) Name() string {
 	return p.name
+}
+
+func (p HelpPlugin) Message() string {
+	return strings.ToLower(p.request.Text)
 }

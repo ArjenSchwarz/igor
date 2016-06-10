@@ -7,27 +7,28 @@ import (
 
 // IgorPlugin is the interface that needs to be followed by all plugins
 type IgorPlugin interface {
-	Work(slack.Request) (slack.Response, error)
+	Work() (slack.Response, error)
 	Describe() map[string]string
 	Name() string
 	Description() string
+	Message() string
 }
 
 // GetPlugins retrieves all the plugins that are activated. It checks the
 // config for a whitelist and blacklist as well.
-func GetPlugins(config config.Config) map[string]IgorPlugin {
+func GetPlugins(request slack.Request, config config.Config) map[string]IgorPlugin {
 	plugins := make(map[string]IgorPlugin)
-	plugins["help"] = Help()
+	plugins["help"] = Help(request)
 	//TODO should handle these errors somehow. Returning an error when the
 	//plugin isn't called doesn't make a lot of sense though
-	plugins["weather"], _ = Weather()
-	plugins["tumblr"], _ = RandomTumblr()
-	plugins["status"], _ = Status()
+	plugins["weather"], _ = Weather(request)
+	plugins["tumblr"], _ = RandomTumblr(request)
+	plugins["status"], _ = Status(request)
 
 	// Whitelist plugins
 	if config.Whitelist != nil {
 		whitelist := make(map[string]IgorPlugin)
-		whitelist["help"] = Help() //Help is always required
+		whitelist["help"] = Help(request) //Help is always required
 		for _, allowedPlugin := range config.Whitelist {
 			whitelist[allowedPlugin] = plugins[allowedPlugin]
 		}

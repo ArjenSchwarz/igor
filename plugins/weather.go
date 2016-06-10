@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/helpers"
@@ -18,21 +19,23 @@ type WeatherPlugin struct {
 	description string
 	Source      string
 	Config      weatherConfig
+	request     slack.Request
 }
 
 // Weather instantiates a WeatherPlugin
-func Weather() (IgorPlugin, error) {
+func Weather(request slack.Request) (IgorPlugin, error) {
 	pluginName := "weather"
 	pluginConfig, err := parseWeatherConfig()
 	if err != nil {
 		return WeatherPlugin{}, err
 	}
-	description := "Igor provides weather information for the city you specify. If no city is specified, the default city is used."
+	description := fmt.Sprintf("Igor provides weather information for the city you specify. If no city is specified, the default city (%s) is used.", pluginConfig.determineDefaultWeatherCity(request))
 	plugin := WeatherPlugin{
 		name:        pluginName,
 		Source:      "http://api.openweathermap.org/data/2.5/",
 		description: description,
 		Config:      pluginConfig,
+		request:     request,
 	}
 	return plugin, nil
 }
@@ -50,13 +53,13 @@ func (WeatherPlugin) Describe() map[string]string {
 //
 // * weather
 // * forecast
-func (plugin WeatherPlugin) Work(request slack.Request) (slack.Response, error) {
+func (plugin WeatherPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
-	if len(request.Text) >= 7 && request.Text[:7] == "weather" {
-		response, err := plugin.handleWeather(request)
+	if len(plugin.Message()) >= 7 && plugin.Message()[:7] == "weather" {
+		response, err := plugin.handleWeather()
 		return response, err
-	} else if len(request.Text) >= 8 && request.Text[:8] == "forecast" {
-		response, err := plugin.handleForecast(request)
+	} else if len(plugin.Message()) >= 8 && plugin.Message()[:8] == "forecast" {
+		response, err := plugin.handleForecast()
 		return response, err
 	}
 
@@ -64,14 +67,14 @@ func (plugin WeatherPlugin) Work(request slack.Request) (slack.Response, error) 
 }
 
 // handleWeather handles a request for the current Weather
-func (plugin *WeatherPlugin) handleWeather(request slack.Request) (slack.Response, error) {
+func (plugin *WeatherPlugin) handleWeather() (slack.Response, error) {
 	var city string
-	if len(request.Text) > 8 {
-		city = request.Text[8:]
+	if len(plugin.Message()) > 8 {
+		city = plugin.Message()[8:]
 	} else {
-		city = plugin.Config.determineDefaultWeatherCity(request)
+		city = plugin.Config.determineDefaultWeatherCity(plugin.request)
 	}
-	city = url.QueryEscape(city)
+	city = url.QueryEscape(plugin.Message())
 	if isSpecialWeather(city) {
 		return getSpecialWeather(city)
 	}
@@ -119,12 +122,12 @@ func (plugin *WeatherPlugin) handleWeather(request slack.Request) (slack.Respons
 }
 
 // handleForecast handles the request for a forecast
-func (plugin *WeatherPlugin) handleForecast(request slack.Request) (slack.Response, error) {
+func (plugin *WeatherPlugin) handleForecast() (slack.Response, error) {
 	var city string
-	if len(request.Text) > 9 {
-		city = request.Text[9:]
+	if len(plugin.Message()) > 9 {
+		city = plugin.Message()[9:]
 	} else {
-		city = plugin.Config.determineDefaultWeatherCity(request)
+		city = plugin.Config.determineDefaultWeatherCity(plugin.request)
 	}
 	city = url.QueryEscape(city)
 	response := slack.Response{}
@@ -200,6 +203,10 @@ func (plugin WeatherPlugin) Description() string {
 // Name returns the name of the plugin
 func (plugin WeatherPlugin) Name() string {
 	return plugin.name
+}
+
+func (plugin WeatherPlugin) Message() string {
+	return strings.ToLower(plugin.request.Text)
 }
 
 // parseWeatherConfig collects the config as defined in the config file for

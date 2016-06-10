@@ -3,13 +3,15 @@ package plugins_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ArjenSchwarz/igor/config"
-	"github.com/ArjenSchwarz/igor/plugins"
-	"github.com/ArjenSchwarz/igor/slack"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/ArjenSchwarz/igor/config"
+	"github.com/ArjenSchwarz/igor/plugins"
+	"github.com/ArjenSchwarz/igor/slack"
 )
 
 // TestNaughtyStrings calls every plugin with the list of naughtystrings
@@ -29,15 +31,18 @@ func TestNaughtyStrings(t *testing.T) {
 	if err != nil {
 		t.Error("Problem getting config")
 	}
-	for _, plugin := range plugins.GetPlugins(config) {
+	request := slack.Request{Text: "string"}
+	for _, plugin := range plugins.GetPlugins(request, config) {
 		for _, string := range list {
-			request := slack.Request{Text: string}
-			_, err := plugin.Work(request)
+			_, err := plugin.Work()
 			if err != nil {
 				switch err.(type) {
 				case *plugins.NoMatchError:
 				default:
-					t.Error("Failed naughty string: " + string + " - " + plugin.Name() + " > " + err.Error())
+					t.Error(fmt.Sprintf("Failed naughty string: %s - %s > %s",
+						string,
+						plugin.Name(),
+						err.Error()))
 				}
 			}
 		}

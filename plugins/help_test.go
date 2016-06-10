@@ -1,15 +1,16 @@
 package plugins_test
 
 import (
-	// "github.com/ArjenSchwarz/igor/config"
-	"github.com/ArjenSchwarz/igor/plugins"
-	"github.com/ArjenSchwarz/igor/slack"
 	"os"
 	"testing"
+
+	"github.com/ArjenSchwarz/igor/plugins"
+	"github.com/ArjenSchwarz/igor/slack"
 )
 
 func TestHelp(t *testing.T) {
-	plugin := plugins.Help()
+	request := slack.Request{}
+	plugin := plugins.Help(request)
 	if plugin.Name() == "" {
 		t.Error("No name is set for the plugin")
 	}
@@ -19,7 +20,8 @@ func TestHelp(t *testing.T) {
 }
 
 func TestDescribe(t *testing.T) {
-	plugin := plugins.Help()
+	request := slack.Request{}
+	plugin := plugins.Help(request)
 	descriptions := plugin.Describe()
 	if len(descriptions) != 4 {
 		t.Error("Expected 4 descriptions")
@@ -39,16 +41,17 @@ func TestWork(t *testing.T) {
 		t.Error("Problem setting environment variable")
 	}
 	request := slack.Request{}
-	plugin := plugins.Help()
+	plugin := plugins.Help(request)
 	// No result test
 	request.Text = "fail"
-	_, err = plugin.Work(request)
+	_, err = plugin.Work()
 	if err == nil {
 		t.Error("Expected failure")
 	}
 	// Help call, lowercase
 	request.Text = "help"
-	response, err := plugin.Work(request)
+	plugin = plugins.Help(request)
+	response, err := plugin.Work()
 	if err != nil {
 		t.Error("Unexpected error for help", err.Error())
 	}
@@ -64,7 +67,8 @@ func TestWork(t *testing.T) {
 	lowercaseText := response.Text
 	// Help call, mixed case
 	request.Text = "Help"
-	response, err = plugin.Work(request)
+	plugin = plugins.Help(request)
+	response, err = plugin.Work()
 	if err != nil {
 		t.Error("Unexpected error for help")
 	}
@@ -74,7 +78,8 @@ func TestWork(t *testing.T) {
 
 	// Introduce yourself call
 	request.Text = "introduce yourself"
-	response, err = plugin.Work(request)
+	plugin = plugins.Help(request)
+	response, err = plugin.Work()
 	if err != nil {
 		t.Error("Unexpected error for help")
 	}

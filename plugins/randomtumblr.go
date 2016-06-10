@@ -17,10 +17,11 @@ type RandomTumblrPlugin struct {
 	name        string
 	description string
 	Config      randomTumblrConfig
+	request     slack.Request
 }
 
 // RandomTumblr instantiates a RandomTumblrPlugin
-func RandomTumblr() (IgorPlugin, error) {
+func RandomTumblr(request slack.Request) (IgorPlugin, error) {
 	pluginName := "randomTumblr"
 	pluginConfig := randomTumblrConfig{}
 	err := config.ParseConfig(&pluginConfig)
@@ -32,6 +33,7 @@ func RandomTumblr() (IgorPlugin, error) {
 		name:        pluginName,
 		description: description,
 		Config:      pluginConfig,
+		request:     request,
 	}
 	return plugin, nil
 }
@@ -51,10 +53,10 @@ func (plugin RandomTumblrPlugin) Describe() map[string]string {
 //
 // * tumblr
 // * tumblr [configured tumblr name]
-func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, error) {
+func (plugin RandomTumblrPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
 	var chosentumblr tumblrDetails
-	if len(request.Text) == 6 && request.Text == "tumblr" {
+	if len(plugin.Message()) == 6 && plugin.Message() == "tumblr" {
 		//Not the most efficient way of randomizing, but good enough for a small map
 		rand.Seed(time.Now().UTC().UnixNano())
 		list := []string{}
@@ -63,8 +65,8 @@ func (plugin RandomTumblrPlugin) Work(request slack.Request) (slack.Response, er
 		}
 		randnr := rand.Intn(len(list))
 		chosentumblr = plugin.Config.Randomtumblr[list[randnr]]
-	} else if len(request.Text) > 6 && request.Text[:6] == "tumblr" {
-		tumblr := request.Text[7:]
+	} else if len(plugin.Message()) > 6 && plugin.Message()[:6] == "tumblr" {
+		tumblr := plugin.Message()[7:]
 		for name, details := range plugin.Config.Randomtumblr {
 			if name == tumblr {
 				chosentumblr = details
@@ -114,6 +116,10 @@ func (plugin RandomTumblrPlugin) Description() string {
 // Name returns the name of the plugin
 func (plugin RandomTumblrPlugin) Name() string {
 	return plugin.name
+}
+
+func (plugin RandomTumblrPlugin) Message() string {
+	return plugin.request.Text
 }
 
 type randomTumblrConfig struct {
