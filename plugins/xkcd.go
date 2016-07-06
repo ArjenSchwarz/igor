@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ArjenSchwarz/igor/slack"
@@ -42,6 +43,7 @@ type xkcdEntry struct {
 func (plugin XkcdPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
 	if len(plugin.Message()) >= 4 && plugin.Message()[:4] == "xkcd" {
+		response.SetPublic()
 		baseurl := "http://xkcd.com/"
 		jsoncall := "info.0.json"
 		if plugin.Message() == "xkcd" {
@@ -116,5 +118,5 @@ func (plugin XkcdPlugin) Description() string {
 
 // Message returns the original request message
 func (plugin XkcdPlugin) Message() string {
-	return plugin.request.Text
+	return strings.ToLower(plugin.request.Text)
 }
