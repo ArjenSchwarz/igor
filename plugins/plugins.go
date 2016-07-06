@@ -24,6 +24,7 @@ func GetPlugins(request slack.Request, config config.Config) map[string]IgorPlug
 	plugins["weather"], _ = Weather(request)
 	plugins["tumblr"], _ = RandomTumblr(request)
 	plugins["status"], _ = Status(request)
+	plugins["xkcd"], _ = Xkcd(request)
 
 	// Whitelist plugins
 	if config.Whitelist != nil {
