@@ -22,7 +22,7 @@ type XkcdPlugin struct {
 // Xkcd is a plugin that returns XKCD comics
 func Xkcd(request slack.Request) (IgorPlugin, error) {
 	pluginName := "xkcd"
-	description := "Igor provides random entries from Tumblr blogs"
+	description := "Igor shows XKCD comics"
 	plugin := XkcdPlugin{
 		name:        pluginName,
 		description: description,
