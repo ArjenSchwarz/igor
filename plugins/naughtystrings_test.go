@@ -33,18 +33,21 @@ func TestNaughtyStrings(t *testing.T) {
 	}
 	request := slack.Request{Text: "string"}
 	for _, plugin := range plugins.GetPlugins(request, config) {
-		for _, string := range list {
-			_, err := plugin.Work()
-			if err != nil {
-				switch err.(type) {
-				case *plugins.NoMatchError:
-				default:
-					t.Error(fmt.Sprintf("Failed naughty string: %s - %s > %s",
-						string,
-						plugin.Name(),
-						err.Error()))
+		t.Run("Plugin="+plugin.Name(), func(t *testing.T) {
+			for _, string := range list {
+				_, err := plugin.Work()
+				if err != nil {
+					switch err.(type) {
+					case *plugins.NoMatchError:
+					default:
+						t.Error(fmt.Sprintf("Failed naughty string: %s - %s > %s",
+							string,
+							plugin.Name(),
+							err.Error()))
+					}
 				}
 			}
-		}
+
+		})
 	}
 }
