@@ -16,6 +16,7 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 * [Weather](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Weather), get the current weather and forecasts
 * [(Random) Tumblr](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-(Random)-Tumblr) image, get a random image from a Tumblr blog
 * [Status](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Status), get the current status of webservices like GitHub and Bitbucket
+* XKCD, get the latest XKCD comic
 
 # TODO
 
