@@ -1,6 +1,9 @@
 package plugins
 
 import (
+	"regexp"
+	"strings"
+
 	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/slack"
 )
@@ -8,10 +11,17 @@ import (
 // IgorPlugin is the interface that needs to be followed by all plugins
 type IgorPlugin interface {
 	Work() (slack.Response, error)
-	Describe() map[string]string
+	Describe(string) map[string]string
 	Name() string
-	Description() string
+	Description(string) string
 	Message() string
+	Config() IgorConfig
+}
+
+// IgorConfig is the interface for all plugin Configuration
+type IgorConfig interface {
+	Languages() map[string]config.LanguagePluginDetails
+	ChosenLanguage() string
 }
 
 // GetPlugins retrieves all the plugins that are activated. It checks the
@@ -60,4 +70,67 @@ func (e *NoMatchError) Error() string {
 // CreateNoMatchError creates a new NoMatchError instance
 func CreateNoMatchError(message string) *NoMatchError {
 	return &NoMatchError{Message: message}
+}
+
+func getCommandName(plugin IgorPlugin) (string, string) {
+	// It's possible for a command to have substitutions
+	// Therefore, this needs to be taken into account
+	reMain := regexp.MustCompile("(.*) \\[")
+	reCommand := regexp.MustCompile("^([^ ]*) ?")
+	subCommandArray := reCommand.FindStringSubmatch(plugin.Message())
+	subCommand := ""
+	if subCommandArray != nil {
+		subCommand = strings.ToLower(subCommandArray[1])
+	}
+	for language, details := range plugin.Config().Languages() {
+		for name, value := range details.Commands {
+			matchArray := reMain.FindStringSubmatch(value.Command)
+			match := ""
+			if matchArray != nil {
+				match = strings.ToLower(matchArray[1])
+			}
+			if match != "" && match == subCommand {
+				return name, language
+			} else if strings.ToLower(plugin.Message()) == strings.ToLower(value.Command) {
+				return name, language
+			}
+		}
+	}
+	return "", ""
+}
+
+func getCommandDetails(plugin IgorPlugin, commandName string) config.LanguagePluginCommandDetails {
+	return getAllCommands(plugin, "")[commandName]
+}
+
+func getAllCommands(plugin IgorPlugin, language string) map[string]config.LanguagePluginCommandDetails {
+	language = getPluginLanguage(plugin, language)
+	return plugin.Config().Languages()[language].Commands
+}
+
+func getDescriptionText(plugin IgorPlugin, language string) string {
+	language = getPluginLanguage(plugin, language)
+	return plugin.Config().Languages()[language].Description
+}
+
+func getPluginLanguage(plugin IgorPlugin, language string) string {
+	if language == "" {
+		language = plugin.Config().ChosenLanguage()
+	}
+	if _, ok := plugin.Config().Languages()[language]; !ok {
+		generalConfig, _ := config.GeneralConfig()
+		language = generalConfig.DefaultLanguage
+	}
+	return language
+}
+
+func getPluginLanguages(pluginname string) map[string]config.LanguagePluginDetails {
+	generalConfig, _ := config.GeneralConfig()
+	details := make(map[string]config.LanguagePluginDetails)
+	for language, langConfig := range generalConfig.Languages {
+		if val, ok := langConfig.Plugins[pluginname]; ok {
+			details[language] = val
+		}
+	}
+	return details
 }

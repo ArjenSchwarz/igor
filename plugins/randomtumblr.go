@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -16,34 +17,42 @@ import (
 type RandomTumblrPlugin struct {
 	name        string
 	description string
-	Config      randomTumblrConfig
+	config      randomTumblrConfig
 	request     slack.Request
+}
+
+// Config returns the plugin configuration
+func (plugin RandomTumblrPlugin) Config() IgorConfig {
+	return plugin.config
 }
 
 // RandomTumblr instantiates a RandomTumblrPlugin
 func RandomTumblr(request slack.Request) (IgorPlugin, error) {
 	pluginName := "randomTumblr"
-	pluginConfig := randomTumblrConfig{}
+	pluginConfig := randomTumblrConfig{
+		languages: getPluginLanguages(pluginName),
+	}
 	err := config.ParseConfig(&pluginConfig)
 	if err != nil {
 		return RandomTumblrPlugin{}, err
 	}
-	description := "Igor provides random entries from Tumblr blogs"
 	plugin := RandomTumblrPlugin{
-		name:        pluginName,
-		description: description,
-		Config:      pluginConfig,
-		request:     request,
+		name:    pluginName,
+		config:  pluginConfig,
+		request: request,
 	}
 	return plugin, nil
 }
 
 // Describe provides the triggers RandomTumblrPlugin can handle
-func (plugin RandomTumblrPlugin) Describe() map[string]string {
+func (plugin RandomTumblrPlugin) Describe(language string) map[string]string {
 	descriptions := make(map[string]string)
-	descriptions["tumblr"] = "Shows a completely random tumblr post"
-	for name, details := range plugin.Config.Randomtumblr {
-		descriptions["tumblr "+name] = fmt.Sprintf("Shows a random post from the %s tumblr", details.Name)
+	pluginCommands := getAllCommands(plugin, language)
+	descriptions[pluginCommands["tumblr"].Command] = pluginCommands["tumblr"].Description
+	for name, details := range plugin.config.Randomtumblr {
+		key := strings.Replace(pluginCommands["specifictumblr"].Command, "[replace]", "%s", -1)
+		value := strings.Replace(pluginCommands["specifictumblr"].Description, "[replace]", "%s", -1)
+		descriptions[fmt.Sprintf(key, name)] = fmt.Sprintf(value, details.Name)
 	}
 	return descriptions
 }
@@ -56,29 +65,32 @@ func (plugin RandomTumblrPlugin) Describe() map[string]string {
 func (plugin RandomTumblrPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
 	var chosentumblr tumblrDetails
-	if len(plugin.Message()) == 6 && plugin.Message() == "tumblr" {
-		//Not the most efficient way of randomizing, but good enough for a small map
-		rand.Seed(time.Now().UTC().UnixNano())
-		list := []string{}
-		for name := range plugin.Config.Randomtumblr {
-			list = append(list, name)
-		}
-		randnr := rand.Intn(len(list))
-		chosentumblr = plugin.Config.Randomtumblr[list[randnr]]
-	} else if len(plugin.Message()) > 6 && plugin.Message()[:6] == "tumblr" {
-		tumblr := plugin.Message()[7:]
-		for name, details := range plugin.Config.Randomtumblr {
-			if name == tumblr {
-				chosentumblr = details
+	for _, details := range plugin.config.Languages() {
+		maincommand := details.Commands["tumblr"].Command
+		if len(plugin.Message()) == len(maincommand) && plugin.Message() == maincommand {
+			//Not the most efficient way of randomizing, but good enough for a small map
+			rand.Seed(time.Now().UTC().UnixNano())
+			list := []string{}
+			for name := range plugin.config.Randomtumblr {
+				list = append(list, name)
+			}
+			randnr := rand.Intn(len(list))
+			chosentumblr = plugin.config.Randomtumblr[list[randnr]]
+		} else if len(plugin.Message()) > len(maincommand) && plugin.Message()[:len(maincommand)] == maincommand {
+			tumblr := plugin.Message()[len(maincommand)+1:]
+			for name, details := range plugin.config.Randomtumblr {
+				if name == tumblr {
+					chosentumblr = details
+				}
 			}
 		}
-	}
-	if chosentumblr.URL != "" {
-		response, err := addTumblrAttachment(response, chosentumblr)
-		if err == nil {
-			response.SetPublic()
+		if chosentumblr.URL != "" {
+			response, err := addTumblrAttachment(response, chosentumblr)
+			if err == nil {
+				response.SetPublic()
+			}
+			return response, err
 		}
-		return response, err
 	}
 	return response, CreateNoMatchError("Nothing found")
 }
@@ -109,8 +121,8 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 }
 
 // Description returns a global description of the plugin
-func (plugin RandomTumblrPlugin) Description() string {
-	return plugin.description
+func (plugin RandomTumblrPlugin) Description(language string) string {
+	return getDescriptionText(plugin, language)
 }
 
 // Name returns the name of the plugin
@@ -118,12 +130,23 @@ func (plugin RandomTumblrPlugin) Name() string {
 	return plugin.name
 }
 
+// Message returns a formatted version of the original message
 func (plugin RandomTumblrPlugin) Message() string {
 	return plugin.request.Text
 }
 
+func (config randomTumblrConfig) Languages() map[string]config.LanguagePluginDetails {
+	return config.languages
+}
+
+func (config randomTumblrConfig) ChosenLanguage() string {
+	return config.chosenLanguage
+}
+
 type randomTumblrConfig struct {
-	Randomtumblr map[string]tumblrDetails
+	Randomtumblr   map[string]tumblrDetails
+	languages      map[string]config.LanguagePluginDetails
+	chosenLanguage string
 }
 
 type tumblrDetails struct {

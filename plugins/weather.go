@@ -18,8 +18,21 @@ type WeatherPlugin struct {
 	name        string
 	description string
 	Source      string
-	Config      weatherConfig
+	config      weatherConfig
 	request     slack.Request
+}
+
+// Config returns the plugin configuration
+func (plugin WeatherPlugin) Config() IgorConfig {
+	return plugin.config
+}
+
+func (config weatherConfig) Languages() map[string]config.LanguagePluginDetails {
+	return config.languages
+}
+
+func (config weatherConfig) ChosenLanguage() string {
+	return config.chosenLanguage
 }
 
 // Weather instantiates a WeatherPlugin
@@ -29,22 +42,22 @@ func Weather(request slack.Request) (IgorPlugin, error) {
 	if err != nil {
 		return WeatherPlugin{}, err
 	}
-	description := fmt.Sprintf("Igor provides weather information for the city you specify. If no city is specified, the default city (%s) is used.", pluginConfig.determineDefaultWeatherCity(request))
 	plugin := WeatherPlugin{
-		name:        pluginName,
-		Source:      "http://api.openweathermap.org/data/2.5/",
-		description: description,
-		Config:      pluginConfig,
-		request:     request,
+		name:    pluginName,
+		Source:  "http://api.openweathermap.org/data/2.5/",
+		config:  pluginConfig,
+		request: request,
 	}
 	return plugin, nil
 }
 
 // Describe provides the triggers WeatherPlugin can handle
-func (WeatherPlugin) Describe() map[string]string {
+func (plugin WeatherPlugin) Describe(language string) map[string]string {
+
 	descriptions := make(map[string]string)
-	descriptions["weather [city]"] = "Show the current weather in the city provided as argument"
-	descriptions["forecast [city]"] = "Shows a 7 day forecast for the city provided as argument"
+	for _, values := range getAllCommands(plugin, language) {
+		descriptions[values.Command] = values.Description
+	}
 	return descriptions
 }
 
@@ -55,12 +68,13 @@ func (WeatherPlugin) Describe() map[string]string {
 // * forecast
 func (plugin WeatherPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
-	if len(plugin.Message()) >= 7 && plugin.Message()[:7] == "weather" {
-		response, err := plugin.handleWeather()
-		return response, err
-	} else if len(plugin.Message()) >= 8 && plugin.Message()[:8] == "forecast" {
-		response, err := plugin.handleForecast()
-		return response, err
+	message, language := getCommandName(plugin)
+	plugin.config.chosenLanguage = language
+	switch message {
+	case "weather":
+		return plugin.handleWeather()
+	case "forecast":
+		return plugin.handleForecast()
 	}
 
 	return response, CreateNoMatchError("Nothing found")
@@ -69,18 +83,19 @@ func (plugin WeatherPlugin) Work() (slack.Response, error) {
 // handleWeather handles a request for the current Weather
 func (plugin *WeatherPlugin) handleWeather() (slack.Response, error) {
 	var city string
-	if len(plugin.Message()) > 8 {
-		city = plugin.Message()[8:]
+	parts := strings.Split(plugin.Message(), " ")
+	if len(parts) > 1 {
+		city = strings.Replace(plugin.Message(), parts[0], "", 1)
 	} else {
-		city = plugin.Config.determineDefaultWeatherCity(plugin.request)
+		city = plugin.config.determineDefaultWeatherCity(plugin.request)
 	}
-	city = url.QueryEscape(plugin.Message())
+	city = url.QueryEscape(city)
 	if isSpecialWeather(city) {
 		return getSpecialWeather(city)
 	}
 	response := slack.Response{}
 	url := fmt.Sprintf("%sfind?APPID=%s&q=%s&units=%s",
-		plugin.Source, plugin.Config.APIToken, city, plugin.Config.Units)
+		plugin.Source, plugin.config.APIToken, city, plugin.config.Units)
 	resp, err := http.Get(url)
 	if err != nil {
 		return response, err
@@ -91,7 +106,8 @@ func (plugin *WeatherPlugin) handleWeather() (slack.Response, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&parsedResult); err != nil {
 		return response, err
 	}
-	response.Text = "Your weather request"
+	commandDetails := getCommandDetails(plugin, "weather")
+	response.Text = commandDetails.Texts["response_text"]
 	for _, record := range parsedResult.List {
 		attach := slack.Attachment{}
 		attach.Title = fmt.Sprintf("%s, %s (%s)",
@@ -101,17 +117,17 @@ func (plugin *WeatherPlugin) handleWeather() (slack.Response, error) {
 		attach.ThumbURL = weatherIconURL(record.Weather[0].Icon)
 		attach.Text = record.Weather[0].Desc
 		tempField := slack.Field{}
-		tempField.Title = "Temp"
-		tempField.Value = formatTemp(record.Main.Temp, plugin.Config.Units)
+		tempField.Title = commandDetails.Texts["temperature"]
+		tempField.Value = formatTemp(record.Main.Temp, plugin.config.Units)
 		tempField.Short = true
 		attach.AddField(tempField)
 		windField := slack.Field{}
-		windField.Title = "Wind"
-		windField.Value = formatWind(record.Wind.Speed, plugin.Config.Units)
+		windField.Title = commandDetails.Texts["wind"]
+		windField.Value = formatWind(record.Wind.Speed, plugin.config.Units)
 		windField.Short = true
 		attach.AddField(windField)
 		humField := slack.Field{}
-		humField.Title = "Humidity"
+		humField.Title = commandDetails.Texts["humidity"]
 		humField.Value = strconv.FormatInt(record.Main.Humidity, 10) + "%"
 		humField.Short = true
 		attach.AddField(humField)
@@ -124,18 +140,19 @@ func (plugin *WeatherPlugin) handleWeather() (slack.Response, error) {
 // handleForecast handles the request for a forecast
 func (plugin *WeatherPlugin) handleForecast() (slack.Response, error) {
 	var city string
-	if len(plugin.Message()) > 9 {
-		city = plugin.Message()[9:]
+	parts := strings.Split(plugin.Message(), " ")
+	if len(parts) > 1 {
+		city = strings.Replace(plugin.Message(), parts[0], "", 1)
 	} else {
-		city = plugin.Config.determineDefaultWeatherCity(plugin.request)
+		city = plugin.config.determineDefaultWeatherCity(plugin.request)
 	}
 	city = url.QueryEscape(city)
 	response := slack.Response{}
 	url := fmt.Sprintf("%sforecast/daily?APPID=%s&q=%s&units=%s",
 		plugin.Source,
-		plugin.Config.APIToken,
+		plugin.config.APIToken,
 		city,
-		plugin.Config.Units)
+		plugin.config.Units)
 	resp, err := http.Get(url)
 	if err != nil {
 		return response, err
@@ -146,7 +163,8 @@ func (plugin *WeatherPlugin) handleForecast() (slack.Response, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&parsedResult); err != nil {
 		return response, err
 	}
-	response.Text = "Your forecast request"
+	commandDetails := getCommandDetails(plugin, "forecast")
+	response.Text = commandDetails.Texts["response_text"]
 	for _, record := range parsedResult.List {
 		attach := slack.Attachment{}
 		attach.Title = fmt.Sprintf("%s, %s (%s)",
@@ -156,22 +174,22 @@ func (plugin *WeatherPlugin) handleForecast() (slack.Response, error) {
 		attach.ThumbURL = weatherIconURL(record.Weather[0].Icon)
 		attach.Text = record.Weather[0].Desc
 		mintempField := slack.Field{}
-		mintempField.Title = "Min Temp"
-		mintempField.Value = formatTemp(record.Temp.Min, plugin.Config.Units)
+		mintempField.Title = commandDetails.Texts["min_temperature"]
+		mintempField.Value = formatTemp(record.Temp.Min, plugin.config.Units)
 		mintempField.Short = true
 		attach.AddField(mintempField)
 		maxtempField := slack.Field{}
-		maxtempField.Title = "Max Temp"
-		maxtempField.Value = formatTemp(record.Temp.Max, plugin.Config.Units)
+		maxtempField.Title = commandDetails.Texts["max_temperature"]
+		maxtempField.Value = formatTemp(record.Temp.Max, plugin.config.Units)
 		maxtempField.Short = true
 		attach.AddField(maxtempField)
 		windField := slack.Field{}
-		windField.Title = "Wind"
-		windField.Value = formatWind(record.Windspeed, plugin.Config.Units)
+		windField.Title = commandDetails.Texts["wind"]
+		windField.Value = formatWind(record.Windspeed, plugin.config.Units)
 		windField.Short = true
 		attach.AddField(windField)
 		humField := slack.Field{}
-		humField.Title = "Humidity"
+		humField.Title = commandDetails.Texts["humidity"]
 		humField.Value = strconv.FormatInt(record.Humidity, 10) + "%"
 		humField.Short = true
 		attach.AddField(humField)
@@ -196,8 +214,9 @@ func (config weatherConfig) determineDefaultWeatherCity(request slack.Request) s
 }
 
 // Description returns a global description of the plugin
-func (plugin WeatherPlugin) Description() string {
-	return plugin.description
+func (plugin WeatherPlugin) Description(language string) string {
+	descrString := strings.Replace(getDescriptionText(plugin, language), "[replace]", "%s", -1)
+	return fmt.Sprintf(descrString, plugin.config.determineDefaultWeatherCity(plugin.request))
 }
 
 // Name returns the name of the plugin
@@ -205,6 +224,7 @@ func (plugin WeatherPlugin) Name() string {
 	return plugin.name
 }
 
+// Message returns the request sent
 func (plugin WeatherPlugin) Message() string {
 	return strings.ToLower(plugin.request.Text)
 }
@@ -220,6 +240,7 @@ func parseWeatherConfig() (weatherConfig, error) {
 	if err != nil {
 		return pluginConfig.Weather, err
 	}
+	pluginConfig.Weather.languages = getPluginLanguages("weather")
 
 	if pluginConfig.Weather.Units == "" {
 		pluginConfig.Weather.Units = "metric"
@@ -362,9 +383,11 @@ type (
 	}
 
 	weatherConfig struct {
-		DefaultCity string
-		APIToken    string
-		Units       string
-		ChannelCity map[string]string
+		DefaultCity    string
+		APIToken       string
+		Units          string
+		ChannelCity    map[string]string
+		languages      map[string]config.LanguagePluginDetails
+		chosenLanguage string
 	}
 )

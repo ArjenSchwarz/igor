@@ -9,20 +9,29 @@ import (
 )
 
 func TestHelp(t *testing.T) {
+	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\", \"languagedir\": \"../language\"}")
+	if err != nil {
+		t.Error("Problem setting environment variable")
+	}
 	request := slack.Request{}
 	plugin := plugins.Help(request)
+
 	if plugin.Name() == "" {
 		t.Error("No name is set for the plugin")
 	}
-	if plugin.Description() == "" {
+	if plugin.Description("english.yml") == "" {
 		t.Error("No description is set for the plugin")
 	}
 }
 
 func TestDescribe(t *testing.T) {
+	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\", \"languagedir\": \"../language\"}")
+	if err != nil {
+		t.Error("Problem setting environment variable")
+	}
 	request := slack.Request{}
 	plugin := plugins.Help(request)
-	descriptions := plugin.Describe()
+	descriptions := plugin.Describe("test")
 	if len(descriptions) != 4 {
 		t.Error("Expected 4 descriptions")
 	}
@@ -36,7 +45,7 @@ func TestDescribe(t *testing.T) {
 
 func TestWork(t *testing.T) {
 	// Make sure it doesn't try to read the config file
-	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\"}")
+	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\", \"languagedir\": \"../language\"}")
 	if err != nil {
 		t.Error("Problem setting environment variable")
 	}

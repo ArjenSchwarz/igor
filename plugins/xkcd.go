@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ArjenSchwarz/igor/config"
 	"github.com/ArjenSchwarz/igor/slack"
 )
 
@@ -17,16 +18,37 @@ type XkcdPlugin struct {
 	name        string
 	description string
 	request     slack.Request
+	config      xkcdConfig
+}
+
+// Config returns the plugin configuration
+func (plugin XkcdPlugin) Config() IgorConfig {
+	return plugin.config
+}
+
+type xkcdConfig struct {
+	languages      map[string]config.LanguagePluginDetails
+	chosenLanguage string
+}
+
+func (config xkcdConfig) Languages() map[string]config.LanguagePluginDetails {
+	return config.languages
+}
+
+func (config xkcdConfig) ChosenLanguage() string {
+	return config.chosenLanguage
 }
 
 // Xkcd is a plugin that returns XKCD comics
 func Xkcd(request slack.Request) (IgorPlugin, error) {
 	pluginName := "xkcd"
-	description := "Igor shows XKCD comics"
+	pluginConfig := xkcdConfig{
+		languages: getPluginLanguages(pluginName),
+	}
 	plugin := XkcdPlugin{
-		name:        pluginName,
-		description: description,
-		request:     request,
+		name:    pluginName,
+		request: request,
+		config:  pluginConfig,
 	}
 	return plugin, nil
 }
@@ -42,28 +64,36 @@ type xkcdEntry struct {
 // are matched.
 func (plugin XkcdPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
-	if len(plugin.Message()) >= 4 && plugin.Message()[:4] == "xkcd" {
-		response.SetPublic()
-		baseurl := "http://xkcd.com/"
-		jsoncall := "info.0.json"
-		if plugin.Message() == "xkcd" {
-			url := fmt.Sprintf("%s%s", baseurl, jsoncall)
-			return parseXkcdMessage(url, response)
-		} else if plugin.Message() == "xkcd random" {
-			url := fmt.Sprintf("%s%s", baseurl, jsoncall)
-			entry, err := getXkcdMessage(url)
-			if err != nil {
-				return response, err
-			}
-			rand.Seed(time.Now().UTC().UnixNano())
-			comicnr := rand.Intn(entry.Number)
-			url = fmt.Sprintf("%s%v/%s", baseurl, comicnr, jsoncall)
-			return parseXkcdMessage(url, response)
-		} else {
-			comicnr := plugin.Message()[5:]
-			url := fmt.Sprintf("%s%v/%s", baseurl, comicnr, jsoncall)
-			return parseXkcdMessage(url, response)
+	message, language := getCommandName(plugin)
+	if message == "" {
+		return response, CreateNoMatchError("Nothing found")
+	}
+	plugin.config.chosenLanguage = language
+	response.SetPublic()
+	baseurl := "http://xkcd.com/"
+	jsoncall := "info.0.json"
+	switch message {
+	case "xkcd":
+		url := fmt.Sprintf("%s%s", baseurl, jsoncall)
+		return plugin.parseXkcdMessage(url, response)
+	case "xkcd_random":
+		url := fmt.Sprintf("%s%s", baseurl, jsoncall)
+		entry, err := getXkcdMessage(url)
+		if err != nil {
+			return response, err
 		}
+		rand.Seed(time.Now().UTC().UnixNano())
+		comicnr := rand.Intn(entry.Number)
+		url = fmt.Sprintf("%s%v/%s", baseurl, comicnr, jsoncall)
+		return plugin.parseXkcdMessage(url, response)
+	case "xkcd_specific":
+		parts := strings.Split(plugin.Message(), " ")
+		comicnr := ""
+		if len(parts) > 1 {
+			comicnr = strings.TrimSpace(strings.Replace(plugin.Message(), parts[0], "", 1))
+		}
+		url := fmt.Sprintf("%s%v/%s", baseurl, comicnr, jsoncall)
+		return plugin.parseXkcdMessage(url, response)
 	}
 	return response, CreateNoMatchError("Nothing found")
 }
@@ -82,12 +112,13 @@ func getXkcdMessage(url string) (xkcdEntry, error) {
 	return parsedResult, err
 }
 
-func parseXkcdMessage(url string, response slack.Response) (slack.Response, error) {
+func (plugin XkcdPlugin) parseXkcdMessage(url string, response slack.Response) (slack.Response, error) {
 	parsedResult, err := getXkcdMessage(url)
 	if err != nil {
 		return response, err
 	}
-	response.Text = fmt.Sprintf("XKCD #%v", parsedResult.Number)
+	commandDetails := getCommandDetails(plugin, "xkcd")
+	response.Text = fmt.Sprintf("%s%v", commandDetails.Texts["response_text"], parsedResult.Number)
 	attach := slack.Attachment{
 		ImageURL: parsedResult.Image,
 		Text:     parsedResult.Alt,
@@ -98,11 +129,12 @@ func parseXkcdMessage(url string, response slack.Response) (slack.Response, erro
 }
 
 // Describe provides the triggers the plugin can handle
-func (plugin XkcdPlugin) Describe() map[string]string {
+func (plugin XkcdPlugin) Describe(language string) map[string]string {
 	descriptions := make(map[string]string)
-	descriptions["xkcd"] = "Get the latest XKCD comic"
-	descriptions["xkcd random"] = "Get a random XKCD comic"
-	descriptions["xkcd [nr]"] = "Get a specific XKCD comic"
+
+	for _, values := range getAllCommands(plugin, language) {
+		descriptions[values.Command] = values.Description
+	}
 	return descriptions
 }
 
@@ -112,8 +144,8 @@ func (plugin XkcdPlugin) Name() string {
 }
 
 // Description returns a global description of the plugin
-func (plugin XkcdPlugin) Description() string {
-	return plugin.description
+func (plugin XkcdPlugin) Description(language string) string {
+	return getDescriptionText(plugin, language)
 }
 
 // Message returns the original request message

@@ -17,7 +17,7 @@ import (
 // TestNaughtyStrings calls every plugin with the list of naughtystrings
 // (https://github.com/minimaxir/big-list-of-naughty-strings).
 func TestNaughtyStrings(t *testing.T) {
-	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\"}")
+	err := os.Setenv("IGOR_CONFIG", "{\"token\": \"testtoken\", \"languagedir\": \"../language\"}")
 	if err != nil {
 		t.Error("Problem setting environment variable")
 	}

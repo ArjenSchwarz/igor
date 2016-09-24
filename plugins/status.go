@@ -18,26 +18,43 @@ import (
 type StatusPlugin struct {
 	name        string
 	description string
-	Config      statusConfig
+	config      statusConfig
 	Checks      map[string]func() (slack.Attachment, error)
 	MainChecks  map[string]func() (slack.Attachment, error)
 	request     slack.Request
 }
 
 type statusConfig struct {
-	Main []string
+	Main           []string
+	languages      map[string]config.LanguagePluginDetails
+	chosenLanguage string
+}
+
+// Config returns the plugin configuration
+func (plugin StatusPlugin) Config() IgorConfig {
+	return plugin.config
+}
+
+func (config statusConfig) Languages() map[string]config.LanguagePluginDetails {
+	return config.languages
+}
+
+func (config statusConfig) ChosenLanguage() string {
+	return config.chosenLanguage
 }
 
 // Status instantiates the StatusPlugin
 func Status(request slack.Request) (IgorPlugin, error) {
+	pluginName := "status"
 	pluginConfig, err := parseStatusConfig()
 	if err != nil {
 		return StatusPlugin{}, err
 	}
+	pluginConfig.languages = getPluginLanguages(pluginName)
 	plugin := StatusPlugin{
-		name:        "status",
-		description: "Igor provides status reports for various services",
-		Config:      pluginConfig,
+		name:        pluginName,
+		description: "",
+		config:      pluginConfig,
 		request:     request,
 	}
 	statuschecks := make(map[string]func() (slack.Attachment, error))
@@ -71,7 +88,9 @@ func Status(request slack.Request) (IgorPlugin, error) {
 func (plugin StatusPlugin) Work() (slack.Response, error) {
 	statuschecks := plugin.Checks
 	response := slack.Response{}
-	if plugin.Message() == "status" {
+	message, language := getCommandName(plugin)
+	plugin.config.chosenLanguage = language
+	if message == "status" {
 		c := make(chan slack.Attachment)
 		for _, function := range plugin.MainChecks {
 			go func(function func() (slack.Attachment, error)) {
@@ -85,26 +104,35 @@ func (plugin StatusPlugin) Work() (slack.Response, error) {
 		for i := 0; i < len(plugin.MainChecks); i++ {
 			response.AddAttachment(<-c)
 		}
-		response.Text = "Status results:"
+		commandDetails := getCommandDetails(plugin, "status")
+		response.Text = commandDetails.Texts["response_text"]
 		response.SetPublic()
-	} else if plugin.Message() == "status aws" {
+	} else if message == "status_aws" {
 		attachments, _ := plugin.handleAWSStatus()
 		for _, attachment := range attachments {
 			response.AddAttachment(attachment)
 		}
-		response.Text = "Status results:"
+		commandDetails := getCommandDetails(plugin, "status_aws")
+		response.Text = commandDetails.Texts["response_text"]
 		response.SetPublic()
-	} else if len(plugin.Message()) > 6 && plugin.Message()[:6] == "status" {
-
-		tocheck := plugin.Message()[7:]
+	} else if message == "status_service" || message == "status_url" {
+		parts := strings.Split(plugin.Message(), " ")
+		tocheck := ""
+		if len(parts) > 1 {
+			tocheck = strings.TrimSpace(strings.Replace(plugin.Message(), parts[0], "", 1))
+		}
+		// Check if this is a predefined service
 		if function, ok := statuschecks[tocheck]; ok {
 			// Treat it as a predefined service
 			attachment, err := function()
 			if err != nil {
+				fmt.Println(err)
 				return response, err
 			}
 			response.AddAttachment(attachment)
-			response.Text = "Status results:"
+
+			commandDetails := getCommandDetails(plugin, "status_service")
+			response.Text = commandDetails.Texts["response_text"]
 			response.SetPublic()
 		} else {
 			// Treat it as a website
@@ -113,7 +141,8 @@ func (plugin StatusPlugin) Work() (slack.Response, error) {
 				return response, err
 			}
 			response.AddAttachment(attachment)
-			response.Text = "The website is:"
+			commandDetails := getCommandDetails(plugin, "status_url")
+			response.Text = commandDetails.Texts["response_text"]
 			response.SetPublic()
 		}
 	}
@@ -124,23 +153,29 @@ func (plugin StatusPlugin) Work() (slack.Response, error) {
 }
 
 // Describe provides the triggers StatusPlugin can handle
-func (plugin StatusPlugin) Describe() map[string]string {
+func (plugin StatusPlugin) Describe(language string) map[string]string {
+	// Get a list of all services
 	var servicelist []string
 	for service := range plugin.Checks {
 		servicelist = append(servicelist, service)
 	}
 	services := strings.Join(servicelist, ", ")
+
 	descriptions := make(map[string]string)
-	descriptions["status"] = "Check the status of selected services"
-	descriptions["status aws"] = "Give a more detailed status report on AWS"
-	descriptions["status [service]"] = fmt.Sprintf("Check the status of the service, available services: %s", services)
-	descriptions["status [url]"] = "Checks if a website is up"
+	for name, values := range getAllCommands(plugin, language) {
+		if name == "status_service" {
+			cleanedDescription := strings.Replace(values.Description, "[replace]", "%s", -1)
+			descriptions[values.Command] = fmt.Sprintf(cleanedDescription, services)
+		} else {
+			descriptions[values.Command] = values.Description
+		}
+	}
 	return descriptions
 }
 
 // Description returns a global description of the plugin
-func (plugin StatusPlugin) Description() string {
-	return plugin.description
+func (plugin StatusPlugin) Description(language string) string {
+	return getDescriptionText(plugin, language)
 }
 
 // Name returns the name of the plugin
@@ -148,12 +183,14 @@ func (plugin StatusPlugin) Name() string {
 	return plugin.name
 }
 
+// Message returns a formatted version of the original message
 func (plugin StatusPlugin) Message() string {
 	return plugin.request.Text
 }
 
-func (StatusPlugin) handleDomain(domain string) (slack.Attachment, error) {
+func (plugin StatusPlugin) handleDomain(domain string) (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: domain}
+	commandDetails := getCommandDetails(plugin, "status_url")
 	resp, err := http.Get(fmt.Sprintf("https://isitup.org/%s.json", domain))
 	defer resp.Body.Close()
 	if err != nil {
@@ -167,11 +204,11 @@ func (StatusPlugin) handleDomain(domain string) (slack.Attachment, error) {
 	}
 	switch result.StatusCode {
 	case 1:
-		attachment.Color = "good"
-		attachment.Text = ":thumbsup:"
+		attachment.Color = slack.ResponseGood
+		attachment.Text = commandDetails.Texts["good"]
 	case 2:
-		attachment.Color = "danger"
-		attachment.Text = ":thumbsdown:"
+		attachment.Color = slack.ResponseBad
+		attachment.Text = commandDetails.Texts["bad"]
 	default:
 		return attachment, errors.New("Not a valid domain")
 	}
@@ -195,11 +232,11 @@ func (StatusPlugin) handleGitHubStatus() (slack.Attachment, error) {
 	attachment.Text = result.Body
 	switch result.Status {
 	case "good":
-		attachment.Color = "good"
+		attachment.Color = slack.ResponseGood
 	case "minor":
-		attachment.Color = "warning"
+		attachment.Color = slack.ResponseWarning
 	case "major":
-		attachment.Color = "danger"
+		attachment.Color = slack.ResponseBad
 	}
 	return attachment, nil
 }
@@ -236,6 +273,8 @@ func (plugin StatusPlugin) handleAWSStatus() ([]slack.Attachment, error) {
 	nrResolved := 0
 	nrProblems := 0
 
+	commandDetails := getCommandDetails(plugin, "status_aws")
+
 	doc, err := goquery.NewDocument(mainAttachment.PreText)
 	if err != nil {
 		return attachments, err
@@ -248,27 +287,27 @@ func (plugin StatusPlugin) handleAWSStatus() ([]slack.Attachment, error) {
 			service := s.Find("td").Eq(1).Text()
 			attachment := slack.Attachment{Title: service, Text: message}
 			if message[:10] == "[RESOLVED]" {
-				attachment.Color = "warning"
+				attachment.Color = slack.ResponseWarning
 				nrResolved++
 			} else {
-				attachment.Color = "danger"
+				attachment.Color = slack.ResponseBad
 				nrProblems++
 			}
 			attachments = append(attachments, attachment)
 		}
 	})
 	if nrProblems != 0 {
-		mainAttachment.Color = "danger"
-		mainAttachment.Text = fmt.Sprintf("Nr of issues: %s", strconv.Itoa(nrProblems))
+		mainAttachment.Color = slack.ResponseBad
+		mainAttachment.Text = fmt.Sprintf("%s: %s", commandDetails.Texts["nr_issues"], strconv.Itoa(nrProblems))
 		if nrResolved != 0 {
-			mainAttachment.Text += fmt.Sprintf("\nNr of resolved issues: %s", strconv.Itoa(nrResolved))
+			mainAttachment.Text += fmt.Sprintf("\n%s: %s", commandDetails.Texts["nr_resolved_issues"], strconv.Itoa(nrResolved))
 		}
 	} else if nrResolved != 0 {
-		mainAttachment.Color = "warning"
-		mainAttachment.Text = fmt.Sprintf("Nr of resolved issues: %s", strconv.Itoa(nrResolved))
+		mainAttachment.Color = slack.ResponseWarning
+		mainAttachment.Text = fmt.Sprintf("%s: %s", commandDetails.Texts["nr_resolved_issues"], strconv.Itoa(nrResolved))
 	} else {
-		mainAttachment.Color = "good"
-		mainAttachment.Text = "Everything is operating normally"
+		mainAttachment.Color = slack.ResponseGood
+		mainAttachment.Text = commandDetails.Texts["ok"]
 	}
 	attachments[0] = mainAttachment
 
@@ -279,6 +318,7 @@ func (plugin StatusPlugin) handleShortAWSStatus() (slack.Attachment, error) {
 	attachment := slack.Attachment{Title: "AWS", PreText: "http://status.aws.amazon.com"}
 	nrResolved := 0
 	nrProblems := 0
+	commandDetails := getCommandDetails(plugin, "status_aws")
 
 	doc, err := goquery.NewDocument(attachment.PreText)
 	if err != nil {
@@ -297,19 +337,19 @@ func (plugin StatusPlugin) handleShortAWSStatus() (slack.Attachment, error) {
 		}
 	})
 	if nrProblems != 0 {
-		attachment.Color = "danger"
-		attachment.Text = fmt.Sprintf("Nr of issues: %s", strconv.Itoa(nrProblems))
+		attachment.Color = slack.ResponseBad
+		attachment.Text = fmt.Sprintf("%s: %s\n", commandDetails.Texts["nr_issues"], strconv.Itoa(nrProblems))
 		if nrResolved != 0 {
-			attachment.Text += fmt.Sprintf("\nNr of resolved issues: %s", strconv.Itoa(nrResolved))
+			attachment.Text += fmt.Sprintf("%s: %s\n", commandDetails.Texts["nr_resolved_issues"], strconv.Itoa(nrResolved))
 		}
-		attachment.Text += "\nTry *status aws* for more details."
+		attachment.Text += commandDetails.Texts["more_details"]
 	} else if nrResolved != 0 {
-		attachment.Color = "warning"
-		attachment.Text = fmt.Sprintf("Nr of resolved issues: %s", strconv.Itoa(nrResolved))
-		attachment.Text += "\nTry *status aws* for more details."
+		attachment.Color = slack.ResponseWarning
+		attachment.Text = fmt.Sprintf("%s: %s\n", commandDetails.Texts["nr_resolved_issues"], strconv.Itoa(nrResolved))
+		attachment.Text += commandDetails.Texts["more_details"]
 	} else {
-		attachment.Color = "good"
-		attachment.Text = "Everything is operating normally"
+		attachment.Color = slack.ResponseGood
+		attachment.Text = commandDetails.Texts["ok"]
 	}
 
 	return attachment, nil
@@ -328,11 +368,11 @@ func (StatusPlugin) handleStatusPageIo(attachment slack.Attachment) (slack.Attac
 	attachment.Text = doc.Find("div.page-status span.status").Text()
 	pageStatus := doc.Find("div.page-status")
 	if pageStatus.HasClass("status-none") {
-		attachment.Color = "good"
+		attachment.Color = slack.ResponseGood
 	} else if pageStatus.HasClass("status-yellow") {
-		attachment.Color = "warning"
+		attachment.Color = slack.ResponseWarning
 	} else {
-		attachment.Color = "danger"
+		attachment.Color = slack.ResponseBad
 	}
 	return attachment, nil
 }
@@ -344,9 +384,9 @@ func (StatusPlugin) handleStatusIo(attachment slack.Attachment) (slack.Attachmen
 	}
 	attachment.Text = doc.Find("#statusbar_text").Text()
 	if attachment.Text == "All Systems Operational" {
-		attachment.Color = "good"
+		attachment.Color = slack.ResponseGood
 	} else {
-		attachment.Color = "danger"
+		attachment.Color = slack.ResponseBad
 	}
 	return attachment, nil
 }
@@ -357,9 +397,5 @@ func parseStatusConfig() (statusConfig, error) {
 	}{}
 
 	err := config.ParseConfig(&pluginConfig)
-	if err != nil {
-		return pluginConfig.Status, err
-	}
-
-	return pluginConfig.Status, nil
+	return pluginConfig.Status, err
 }

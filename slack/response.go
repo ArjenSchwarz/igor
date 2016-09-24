@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+// ResponseGood returns the color code for positive responses
+const ResponseGood = "good"
+
+// ResponseWarning returns the color code for warning responses
+const ResponseWarning = "warning"
+
+// ResponseBad returns the color code for negative responses
+const ResponseBad = "danger"
+
 // Response contains the fields for returning a response message to Slack
 type Response struct {
 	Text         string       `json:"text"`

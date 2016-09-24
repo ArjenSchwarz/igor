@@ -1,0 +1,110 @@
+plugins:
+  help:
+    description: I provide help with the following commands
+    commands:
+      help:
+        command: help
+        description: This help message, providing a list of available commands
+        texts:
+          response_text: >
+            I can see that you're trying to find an Igor, would you like some help with that?
+            You can choose from any of the below listed commands.
+            Also, if you prefix a command with an exclamation point, like *!help*, the result will be shown publicly.
+      intro:
+        command: introduce yourself
+        description: A public introduction of Igor
+        texts:
+          response_text: I am Igor, reprethenting We-R-Igors.
+          attach_title: A Spare Hand When Needed
+          attach_text: >
+            We come from Überwald, but are alwayth where we are needed motht.
+            Run */igor help* to see which Igors are currently available.
+      tellme:
+        command: tell me about yourself
+        description: Information about Igor
+        texts:
+          response_text: Originally Igors come from Überwald, but in this world our home is on GitHub.
+          github_text: "The main repository is on https://github.com/ArjenSchwarz/igor. Feel free to contribute"
+          site_text: "Articles written about Igor and its creation can be found on https://ig.nore.me/projects/igor"
+      whoami:
+        command: "who am I?"
+        description: Development information about your account
+        texts:
+          response_text: You are not an Igor, and you are the one who commands me. Other than that I don't know much about you. Maybe I'll recognize you if you do some evil laughing?
+          attach_title: Account details
+
+  randomTumblr:
+    description: "Igor provides random entries from Tumblr blogs"
+    commands:
+      tumblr:
+        command: tumblr
+        description: Shows a completely random tumblr post
+      specifictumblr:
+        command: "tumblr [replace]"
+        description: "Shows a random post from the [replace] tumblr"
+
+  weather:
+    description: "Igor provides weather information for the city you specify. If no city is specified, the default city [replace] is used."
+    commands:
+      weather:
+        command: weather [city]
+        description: Show the current weather in the city provided as argument
+        texts:
+          response_text: Your weather request
+          wind: Wind
+          temperature: Temp
+          humidity: Humidity
+      forecast:
+        command: forecast [city]
+        description: Shows a 7 day forecast for the city provided as argument
+        texts:
+          response_text: Your forecast request
+          wind: Wind
+          min_temperature: Min Temp
+          max_temperature: Max Temp
+          humidity: Humidity
+
+  status:
+    description: "Igor provides status reports for various services"
+    commands:
+      status:
+        command: status
+        description: Check the status of selected services
+        texts:
+          response_text: "Status results:"
+      status_aws:
+        command: status aws
+        description: Get a detailed status report of the AWS services
+        texts:
+          response_text: "Status results:"
+          nr_issues: "Nr of issues"
+          nr_resolved_issues: "Nr of resolved issues"
+          ok: "Everything is operating normally"
+          more_details: "Try *status aws* for more details."
+      status_url:
+        command: status [url]
+        description: Checks if a website is up
+        texts:
+          response_text: "The website is:"
+          good: ":thumbsup:"
+          bad: ":thumbsdown:"
+      status_service:
+        command: status [service]-
+        description: "Check the status of the service, available services: [replace]"
+        texts:
+          response_text: "Status results:"
+
+  xkcd:
+    description: "Igor shows XKCD comics"
+    commands:
+      xkcd:
+        command: xkcd
+        description: "Get the latest XKCD comic"
+        texts:
+          response_text: "XKCD #"
+      xkcd_random:
+        command: xkcd random
+        description: "Get a random XKCD comic"
+      xkcd_specific:
+        command: xkcd [nr]
+        description: "Get a specific XKCD comic"
