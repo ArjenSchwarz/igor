@@ -62,7 +62,7 @@ build:
         name: Create personal releases
         code: |
           cd $WERCKER_SOURCE_DIR/personal/ignoreme
-          zip $ORG_SOURCE/zips/ignoreme.zip *
+          zip $WERCKER_SOURCE_DIR/zips/ignoreme.zip *
           cd $WERCKER_SOURCE_DIR/personal/gang
           zip $WERCKER_SOURCE/zips/gang.zip *
           cd $WERCKER_SOURCE_DIR
