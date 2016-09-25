@@ -64,7 +64,7 @@ build:
           cd $WERCKER_SOURCE_DIR/personal/ignoreme
           zip $WERCKER_SOURCE_DIR/zips/ignoreme.zip *
           cd $WERCKER_SOURCE_DIR/personal/gang
-          zip $WERCKER_SOURCE/zips/gang.zip *
+          zip $WERCKER_SOURCE_DIR/zips/gang.zip *
           cd $WERCKER_SOURCE_DIR
           cp -R $WERCKER_SOURCE_DIR/zips $ORG_SOURCE
           ls $ORG_SOURCE/zips
