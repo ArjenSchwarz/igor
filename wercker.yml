@@ -68,7 +68,7 @@ build:
     - script:
         name: prepare for Docker build
         code: |
-          cp main dockerbuild/
+          cp -R main language dockerbuild/
           cp -R dockerbuild $ORG_SOURCE/
 
 deploy:
