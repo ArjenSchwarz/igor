@@ -1,3 +1,5 @@
+language:
+  description: Igor is also available in English, try "help" for an explanation
 plugins:
   help:
     description: I provide help with the following commands
@@ -89,7 +91,7 @@ plugins:
           good: ":thumbsup:"
           bad: ":thumbsdown:"
       status_service:
-        command: status [service]-
+        command: status [service]
         description: "Check the status of the service, available services: [replace]"
         texts:
           response_text: "Status results:"

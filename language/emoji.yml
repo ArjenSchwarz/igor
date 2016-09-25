@@ -1,0 +1,110 @@
+language:
+  description: ":robot_face::exclamation: :right_arrow: :question:"
+plugins:
+  help:
+    description: ":question: :robot_face::exclamation:"
+    commands:
+      help:
+        command: ":question:"
+        description: ":page_facing_up:"
+        texts:
+          response_text: >
+            :eye: :page_facing_up:
+            !:question: :arrow_right: :house_with_garden:
+      intro:
+        command: ":robot_face:"
+        description: ":robot_face:"
+        texts:
+          response_text: ":robot_face::exclamation"
+          attach_title: ":hand: :wrench:"
+          attach_text: >
+            /igor :question: :arrow_right: :page_facing_up:
+      tellme:
+        command: "robot_face: :hammer_and_wrench:"
+        description: ":robot_face: :hammer_and_wrench:"
+        texts:
+          response_text: ":robot_face: :hammer_and_wrench: :exclamation:"
+          github_text: "https://github.com/ArjenSchwarz/igor :arrow_right: :hammer_and_wrench:"
+          site_text: "https://ig.nore.me/projects/igor :arrow_right: :book:"
+      whoami:
+        command: ":neutral_face:"
+        description: ":hammer_and_wrench: :neutral_face:"
+        texts:
+          response_text: ":stuck_out_tongue_winking:"
+          attach_title: ":speaking_head_in_silhouette:"
+
+  randomTumblr:
+    description: ":robot_face: :right_arrow: :game_die: Tumblr"
+    commands:
+      tumblr:
+        command: ":stuck_out_tongue:"
+        description: ":game_die: Tumblr"
+      specifictumblr:
+        command: ":stuck_out_tongue: [replace]"
+        description: ":game_die: [replace] tumblr"
+
+  weather:
+    description: ":robot_face: :sunny: :grey_question: Default: [replace]"
+    commands:
+      weather:
+        command: ":sunny: [city]"
+        description: ":sunny: :grey_question:"
+        texts:
+          response_text: ":sunny:"
+          wind: ":wind_blowing_face:"
+          temperature: ":thermometer:"
+          humidity: ":droplet:"
+      forecast:
+        command: ":crystal_ball: [city]"
+        description: "7 :calendar: :crystal_ball::grey_question:"
+        texts:
+          response_text: ":crystal_ball:"
+          wind: ":wind_blowing_face:"
+          min_temperature: ":arrow_down: :thermometer:"
+          max_temperature: ":arrow_up: :thermometer:"
+          humidity: ":droplet:"
+
+  status:
+    description: ":thumbsup: :thumbsdown: :grey_question:"
+    commands:
+      status:
+        command: ":thumbsup::thumbsdown:"
+        description: ":thumbsup: :thumbsdown: :grey_question:"
+        texts:
+          response_text: ":thumbsup: :thumbsdown: :grey_question:"
+      status_aws:
+        command: ":thumbsup::thumbsdown: aws"
+        description: ":thumbsup: :thumbsdown: :page_facing_up: :grey_question: AWS"
+        texts:
+          response_text: ":thumbsup: :thumbsdown: :grey_question:"
+          nr_issues: ":hash: :boom:"
+          nr_resolved_issues: ":hash: :face_with_head_bandage:"
+          ok: ":thumbsup:"
+          more_details: "*:chart_with_upwards_trend: aws* :arrow_right: :page_facing_up:"
+      status_url:
+        command: ":thumbsup::thumbsdown: [url]"
+        description: ":thumbsup: :thumbsdown: :grey_question:"
+        texts:
+          response_text: ":thumbsup: :thumbsdown::grey_question:"
+          good: ":thumbsup:"
+          bad: ":thumbsdown:"
+      status_service:
+        command: ":thumbsup::thumbsdown: [service]"
+        description: ":thumbsup: :thumbsdown: :grey_question: [replace]"
+        texts:
+          response_text: ":thumbsup: :thumbsdown::grey_question:"
+
+  xkcd:
+    description: ":robot_face: :arrow_right: XKCD"
+    commands:
+      xkcd:
+        command: ":pencil2:"
+        description: ":pencil2: XKCD"
+        texts:
+          response_text: "XKCD :hash:"
+      xkcd_random:
+        command: ":pencil2: :game_die:"
+        description: ":game_die: XKCD"
+      xkcd_specific:
+        command: ":pencil2: [nr]"
+        description: "XKCD :hash:"

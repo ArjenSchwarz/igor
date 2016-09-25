@@ -98,7 +98,16 @@ func (plugin HelpPlugin) handleHelp(response slack.Response) (slack.Response, er
 	if err != nil {
 		return response, err
 	}
+	attach := slack.Attachment{Text: ""}
 	allPlugins := GetPlugins(plugin.request, config)
+	for languageName, details := range config.Languages {
+		if languageName != plugin.config.chosenLanguage {
+			attach.Text += details.Language["description"] + "\n"
+		}
+	}
+	if attach.Text != "" {
+		response.AddAttachment(attach)
+	}
 	c := make(chan slack.Attachment)
 	for _, igor := range allPlugins {
 		go func(igor IgorPlugin, language string) {

@@ -21,7 +21,8 @@ type Config struct {
 }
 
 type languageConfig struct {
-	Plugins map[string]LanguagePluginDetails
+	Plugins  map[string]LanguagePluginDetails
+	Language map[string]string
 }
 
 // LanguagePluginDetails holds the details for a plugin in a language

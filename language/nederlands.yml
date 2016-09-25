@@ -1,0 +1,112 @@
+language:
+  description: Igor begrijpt ook Nederlands, probeer "uitleg" om te zien wat mogelijk is
+plugins:
+  help:
+    description: Ik help met de volgende bevelen
+    commands:
+      help:
+        command: uitleg
+        description: Deze uitleg, die een lijst van mogelijke bevelen geeft
+        texts:
+          response_text: >
+            Ik zie dat je een Igor wilt bevelen, wilt u daar help mee?
+            Kies een van de onderstaande bevelen
+            En als u een bevel met een uitroepteken begint zoals *!uitleg* kan iedereen het zien
+      intro:
+        command: introduceer jezelf
+        description: Een publieke introductie van Igor
+        texts:
+          response_text: Ik ben Igor, van We-R-Igors.
+          attach_title: Een extra hand, waar handig
+          attach_text: >
+            Wij komen uit Überwald, maar zijn altijd waar we handig zijn.
+            Probeer *uitleg* om te zien welke Igors beschikbaar zijn.
+      tellme:
+        command: vertel me over jezelf
+        description: Informatie over Igor
+        texts:
+          response_text: Wij komen uit Überwald, maar leven nu op GitHub.
+          github_text: "De git repository is op https://github.com/ArjenSchwarz/igor. Voel vrij om te helpen."
+          site_text: "Artikelen over Igor en zijn ontwikkeling zijn te vinden op https://ig.nore.me/projects/igor"
+      whoami:
+        command: "wie ben ik?"
+        description: Ontwikkel informatie over u
+        texts:
+          response_text: U bent geen Igor, dus ik ken u niet maar misschien helpt de onderstaande informatie?
+          attach_title: Informatie
+
+  randomTumblr:
+    description: "Igor geeft een foto van een willekeurig Tumblr blog"
+    commands:
+      tumblr:
+        command: tumblr
+        description: Geeft een compleet willekeurige foto
+      specifictumblr:
+        command: "tumblr [replace]"
+        description: "Geeft een willekeurige foto van de [replace] tumblr"
+
+  weather:
+    description: "Igor geeft weer informatie over de stad die je vraagt, als je geen stad geeft wordt [replace] gebruikt."
+    commands:
+      weather:
+        command: weer [stad]
+        description: Geef het weer in de gegeven stad
+        texts:
+          response_text: Uw weerbericht
+          wind: Wind
+          temperature: Temp
+          humidity: Luchtvochtigheid
+      forecast:
+        command: voorspelling [stad]
+        description: Geeft een 7-daagse weersvoorspelling voor de gegeven stad
+        texts:
+          response_text: Uw weerbericht
+          wind: Wind
+          min_temperature: Min Temp
+          max_temperature: Max Temp
+          humidity: Luchtvochtigheid
+
+  status:
+    description: "Igor geeft een status rapport voor verschillende services"
+    commands:
+      status:
+        command: statusrapport
+        description: Geef een statusrapport over de services
+        texts:
+          response_text: "Statusrapport:"
+      status_aws:
+        command: statusrapport aws
+        description: Geef een detail rapport over AWS
+        texts:
+          response_text: "Statusrapport:"
+          nr_issues: "Aantal problemen"
+          nr_resolved_issues: "Aantal opgeloste problemen"
+          ok: "Alles is ok"
+          more_details: "Probeer *statusrapport aws* voor meer detail."
+      status_url:
+        command: statusrapport [url]
+        description: Kijkt of een website werkt
+        texts:
+          response_text: "De website is:"
+          good: ":thumbsup:"
+          bad: ":thumbsdown:"
+      status_service:
+        command: statusrapport [service]
+        description: "Controleerd de status van een service, beschikbare services zijn: [replace]"
+        texts:
+          response_text: "Statusrapport:"
+
+  xkcd:
+    description: "Igor toont XKCD strips"
+    commands:
+      xkcd:
+        command: xkcd
+        description: "Toon de laatste XKCD strip"
+        texts:
+          response_text: "XKCD #"
+      xkcd_random:
+        command: xkcd willekeurig
+        description: "Toon een willekeurige XKCD strip"
+      xkcd_specific:
+        command: xkcd [nr]
+        description: "Toon een specifieke XKCD strip"
