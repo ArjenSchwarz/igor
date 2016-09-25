@@ -61,9 +61,12 @@ build:
     - script:
         name: Create personal releases
         code: |
-          zip -j zips/ignoreme.zip $WERCKER_SOURCE_DIR/personal/ignoreme/*
-          zip -j zips/gang.zip $WERCKER_SOURCE_DIR/personal/gang/*
-          cp -R zips $ORG_SOURCE
+          cd $WERCKER_SOURCE_DIR/personal/ignoreme
+          zip $ORG_SOURCE/zips/ignoreme.zip *
+          cd $WERCKER_SOURCE_DIR/personal/gang
+          zip $WERCKER_SOURCE/zips/gang.zip *
+          cd $WERCKER_SOURCE_DIR
+          cp -R $WERCKER_SOURCE_DIR/zips $ORG_SOURCE
           ls $ORG_SOURCE/zips
     - script:
         name: prepare for Docker build
