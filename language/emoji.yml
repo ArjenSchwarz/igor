@@ -1,5 +1,5 @@
 language:
-  description: ":robot_face::exclamation: :right_arrow: :question:"
+  description: ":robot_face::exclamation: :arrow_right: :question:"
 plugins:
   help:
     description: ":question: :robot_face::exclamation:"
@@ -20,7 +20,7 @@ plugins:
           attach_text: >
             /igor :question: :arrow_right: :page_facing_up:
       tellme:
-        command: "robot_face: :hammer_and_wrench:"
+        command: ":robot_face: :hammer_and_wrench:"
         description: ":robot_face: :hammer_and_wrench:"
         texts:
           response_text: ":robot_face: :hammer_and_wrench: :exclamation:"
@@ -34,7 +34,7 @@ plugins:
           attach_title: ":speaking_head_in_silhouette:"
 
   randomTumblr:
-    description: ":robot_face: :right_arrow: :game_die: Tumblr"
+    description: ":robot_face: :arrow_right: :game_die: Tumblr :grey_question:"
     commands:
       tumblr:
         command: ":stuck_out_tongue:"
@@ -44,7 +44,7 @@ plugins:
         description: ":game_die: [replace] tumblr"
 
   weather:
-    description: ":robot_face: :sunny: :grey_question: Default: [replace]"
+    description: ":robot_face: :arrow_right: :sunny::grey_question: Default: [replace]"
     commands:
       weather:
         command: ":sunny: [city]"
@@ -65,7 +65,7 @@ plugins:
           humidity: ":droplet:"
 
   status:
-    description: ":thumbsup: :thumbsdown: :grey_question:"
+    description: ":robot_face: :arrow_right: :thumbsup: :thumbsdown::grey_question:"
     commands:
       status:
         command: ":thumbsup::thumbsdown:"
