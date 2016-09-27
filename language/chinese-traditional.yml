@@ -1,0 +1,111 @@
+language:
+  description: "Igor 也可以使用中文，請參考「幫助」說明。"
+plugins:
+  help:
+    description: "我會提供說明予下列指令"
+    commands:
+      help:
+        command: "幫助"
+        description: "這是提供指令說明的訊息"
+        texts:
+          response_text: >
+            你需要幫忙找Igor嗎？
+            你可以在下方查看想要的指令。
+            如果在指令前方加上感嘆號，如"!幫助"，答覆會公開顯示出來。
+      intro:
+        command: "介紹自己"
+        description: "Igor的自我介紹"
+        texts:
+          response_text: "你好，我是Igor。"
+          attach_title:
+          attach_text: >
+            我們是來協助你的，利用"/igor 幫助"看看那個Igors可以使用。
+      tellme:
+        command: "介紹更多"
+        description: "Igor的資訊"
+        texts:
+          response_text: "原本Igors是來自Überwald，但在這個世界GitHub是我們的家。"
+          github_text: "在這查看Igor的程式碼 https://github.com/ArjenSchwarz/igor "
+          site_text: "更多有關Igor的文章 https://ig.nore.me/projects/igor"
+      whoami:
+        command: "我是誰"
+        description: "關於你的資料"
+        texts:
+          response_text: "你不是Igor，而是給我指令的人。除此以外，我對你一無所知。"
+          attach_title: "戶口資訊"
+
+  randomTumblr:
+    description: "Igor提供隨機Tumblr貼文"
+    commands:
+      tumblr:
+        command: tumblr
+        description: "顯示隨機的Tumblr貼文"
+      specifictumblr:
+        command: "tumblr [replace]"
+        description: "顯示隨機的[replace]的Tumblr貼文"
+
+  weather:
+    description: "Igor提供你指定城市的天氣資訊。如沒有指定，Igor會顯示[replace]城市的資訊。"
+    commands:
+      weather:
+        command: "天氣報告 [城市]"
+        description: "顯示當地現時的天氣"
+        texts:
+          response_text: "天氣報告"
+          wind: "風速"
+          temperature: "温度"
+          humidity: "濕度"
+      forecast:
+        command: "天氣預報 [城市]"
+        description: "顯示當地七天天氣預報"
+        texts:
+          response_text: "天氣預報"
+          wind: "風速"
+          min_temperature: "最低氣温"
+          max_temperature: "最高氣温"
+          humidity: "濕度"
+
+  status:
+    description: "Igor提供系統狀態報告"
+    commands:
+      status:
+        command: "狀態"
+        description: "查看某系統的狀態報告"
+        texts:
+          response_text: "狀態報告"
+      status_aws:
+        command: "狀態 aws"
+        description: "查看詳細的AWS狀態報告"
+        texts:
+          response_text: "狀態報告"
+          nr_issues: "問題數量"
+          nr_resolved_issues: "已解決數量"
+          ok: "運作一切正常"
+          more_details: "查看詳細報告可用「狀態 aws」"
+      status_url:
+        command: "狀態 [url]"
+        description: "查看某網站的狀態報告"
+        texts:
+          response_text: "狀態報告"
+          good: ":thumbsup:"
+          bad: ":thumbsdown:"
+      status_service:
+        command: "狀態 [系統]"
+        description: "查看某系統的狀態報告，可查閱系統:[replace]"
+        texts:
+          response_text: "狀態報告"
+
+  xkcd:
+    description: "Igor顯示 XKCD 漫晝"
+    commands:
+      xkcd:
+        command: xkcd
+        description: "最新的 XKCD 漫畫"
+        texts:
+          response_text: "XKCD #"
+      xkcd_random:
+        command: "xkcd 隨機"
+        description: "隨機的 XKCD 漫畫"
+      xkcd_specific:
+        command: "xkcd [編號]"
+        description: "「編號」的 XKCD 漫畫"
