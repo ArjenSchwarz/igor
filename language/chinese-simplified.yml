@@ -1,0 +1,112 @@
+language:
+  description: "Igor也支持中文，详情请输入［帮助］。"
+plugins:
+  help:
+    description: "我为以下的命令提供使用说明"
+    commands:
+      help:
+        command: "帮助"
+        description: "提供所有可用的命令"
+        texts:
+          response_text: >
+            欢迎使用Igor。如果您需要帮助，
+            您可以在下方查看可执行的命令。
+            如果在命令前加上一个感叹号，比如："!帮助"，结果会公开显示出来。
+      intro:
+        command: "自我介绍"
+        description: "简要介绍"
+        texts:
+          response_text: "您好，我是Igor，代表We-R-Igors。"
+          attach_title: 随时准备为您服务
+          attach_text: >
+            我们来自遥远的Überwald，但只要您需要，我们会随时出现在您身边。
+            输入 "/igor 帮助" 查看哪些命令可以执行。
+      tellme:
+        command: "你的故事"
+        description: "Igor的详细信息"
+        texts:
+          response_text: "Igors的故乡在Überwald，但在这个世界，GitHub就是我们的家。"
+          github_text: "我所有的一切都在 https://github.com/ArjenSchwarz/igor。欢迎大家帮助我们变的更好。"
+          site_text: "如果想了解更多关于我的故事，请查阅 https://ig.nore.me/projects/igor"
+      whoami:
+        command: 我是谁
+        description: "您的slack账户信息"
+        texts:
+          response_text: "您不是Igor，您是我老板。我除了听您的话，其他我什么都不知道。"
+          attach_title: "账户信息"
+
+  randomTumblr:
+    description: "Igor提供随机Tumblr内容"
+    commands:
+      tumblr:
+        command: tumblr
+        description: "显示随机的Tumblr内容"
+      specifictumblr:
+        command: "tumblr [replace]"
+        description: "显示随机的[replace]的Tumblr内容"
+
+  weather:
+    description: "Igor提供指定城市的天气情况。如果沒有指定，Igor将显示[replace]城市的天气状况。"
+    commands:
+      weather:
+        command: "天气 [城市]"
+        description: "显示某城市的实时天气情况"
+        texts:
+          response_text: "天气情况"
+          wind: "风力"
+          temperature: "气温"
+          humidity: "湿度"
+      forecast:
+        command: "天气预报 [城市]"
+        description: "显示该城市未来7天的天气预报"
+        texts:
+          response_text: "天气预报"
+          wind: "风力"
+          min_temperature: "最低气温"
+          max_temperature: "最高气温"
+          humidity: "湿度"
+
+  status:
+    description: "Igor提供系统状态报告"
+    commands:
+      status:
+        command: "状态"
+        description: "查看该系统的状态报告"
+        texts:
+          response_text: "状态报告："
+      status_aws:
+        command: "状态 aws"
+        description: "查看详细的AWS状态报告"
+        texts:
+          response_text: "状态报告："
+          nr_issues: "问题数量"
+          nr_resolved_issues: "已解决问题数量"
+          ok: "运行一切正常"
+          more_details: "用 *状态 aws* 查看更多信息"
+      status_url:
+        command: "状态 [url]"
+        description: "查看网站是否运行正常"
+        texts:
+          response_text: "状态报告："
+          good: ":thumbsup:"
+          bad: ":thumbsdown:"
+      status_service:
+        command: "状态 [系統]"
+        description: "查看某系统的状态报告，可查阅系统：[replace]"
+        texts:
+          response_text: "状态报告："
+
+  xkcd:
+    description: "Igor显示XKCD漫画"
+    commands:
+      xkcd:
+        command: xkcd
+        description: "最新的XKCD漫画"
+        texts:
+          response_text: "XKCD #"
+      xkcd_random:
+        command: "xkcd 随机"
+        description: "随机XKCD漫画"
+      xkcd_specific:
+        command: "xkcd [编号]"
+        description: "［编号］的XKCD漫画"
