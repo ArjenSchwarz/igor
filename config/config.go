@@ -10,8 +10,11 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var configHolder Config
+
 // Config contains general configuration details
 type Config struct {
+	Kms             bool
 	Token           string
 	DefaultLanguage string
 	Blacklist       []string
@@ -44,35 +47,42 @@ var fallbackLanguage = "english.yml"
 
 // GeneralConfig reads the configuration file and parses its general information
 func GeneralConfig() (Config, error) {
-	config := Config{}
-	err := ParseConfig(&config)
-	if err != nil {
-		return config, err
-	}
-	if config.LanguageDir == "" {
-		config.LanguageDir = "language"
-	}
-
-	languageFiles, err := ioutil.ReadDir(config.LanguageDir)
-	if err != nil {
-		return config, err
-	}
-	languages := make(map[string]languageConfig)
-	for _, file := range languageFiles {
-		lConfig := languageConfig{}
-		err = parseLanguageFile(config.LanguageDir+"/"+file.Name(), &lConfig)
+	if configHolder.Token == "" {
+		config := Config{}
+		err := ParseConfig(&config)
 		if err != nil {
 			return config, err
 		}
-		languages[file.Name()] = lConfig
+		config.Token, err = decryptValue(config.Kms, config.Token)
+		if err != nil {
+			return config, err
+		}
+		if config.LanguageDir == "" {
+			config.LanguageDir = "language"
+		}
+
+		languageFiles, err := ioutil.ReadDir(config.LanguageDir)
+		if err != nil {
+			return config, err
+		}
+		languages := make(map[string]languageConfig)
+		for _, file := range languageFiles {
+			lConfig := languageConfig{}
+			err = parseLanguageFile(config.LanguageDir+"/"+file.Name(), &lConfig)
+			if err != nil {
+				return config, err
+			}
+			languages[file.Name()] = lConfig
+		}
+		config.Languages = languages
+		if config.DefaultLanguage == "" {
+			config.DefaultLanguage = fallbackLanguage
+		} else {
+			config.DefaultLanguage = strings.Replace(config.DefaultLanguage, ".yml", "", -1) + ".yml"
+		}
+		configHolder = config
 	}
-	config.Languages = languages
-	if config.DefaultLanguage == "" {
-		config.DefaultLanguage = fallbackLanguage
-	} else {
-		config.DefaultLanguage = strings.Replace(config.DefaultLanguage, ".yml", "", -1) + ".yml"
-	}
-	return config, nil
+	return configHolder, nil
 }
 
 // GetConfigFile retrieves the contents of the config file as a byte array
