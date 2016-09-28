@@ -240,6 +240,11 @@ func parseWeatherConfig() (weatherConfig, error) {
 	if err != nil {
 		return pluginConfig.Weather, err
 	}
+	pluginConfig.Weather.APIToken, err = config.DecryptString(pluginConfig.Weather.APIToken)
+	if err != nil {
+		return pluginConfig.Weather, err
+	}
+
 	pluginConfig.Weather.languages = getPluginLanguages("weather")
 
 	if pluginConfig.Weather.Units == "" {
