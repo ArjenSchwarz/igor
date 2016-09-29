@@ -42,3 +42,13 @@ func LoadRequestFromQuery(query string) Request {
 func (request *Request) Validate(config config.Config) bool {
 	return request.Token == config.Token
 }
+
+// UserInList checks if the request's user is in the provided list
+func (request *Request) UserInList(list []string) bool {
+	for _, name := range list {
+		if name == request.UserName || name == request.UserID {
+			return true
+		}
+	}
+	return false
+}
