@@ -14,13 +14,30 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 * [Weather](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Weather), get the current weather and forecasts
 * [(Random) Tumblr](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-(Random)-Tumblr) image, get a random image from a Tumblr blog
 * [Status](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Status), get the current status of webservices like GitHub and Bitbucket
-* XKCD, get the latest XKCD comic
+* [XKCD](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-XKCD), get the latest (or a specific/random) XKCD comic
 
 # Language support
 
 Igor is built to understand multiple languages. The language files are stored in the language directory, and are yaml files. If you wish to add a language create a file to put in there following the structure of the existing files. If you don't wish to provide a translation for a specific plugin you can leave it out as it will gracefully fall back to the default language. The default language is defined in the configuration as `defaultlanguage: yourlanguage` and defaults to `english`.
 
 If you set the default language to a language that doesn't have all plugins implemented, it will be possible to make Igor unable to comply. This will make Igor sad and it might even crash. So this is not recommended.
+
+# KMS support
+
+There is the option to encrypt the various tokens in you config file using KMS. This means you create a new KMS key (in the region you run Igor) or use the default one provided by AWS. Once you have access to a key you can encrypt your tokens easily using the AWS CLI:
+
+```bash
+aws kms encrypt --key-id alias/igorkey --plaintext YOURTOKEN
+```
+
+The resulting output then has a CiphertextBlob containing the encrypted value. You can then put this in the place of your plain text token values in the config file. Additionally you will need to mark the config as using KMS by adding the `kms: true` flag.
+
+Take note! You will have to encode all tokens in your configuration once you enable KMS. At the moment that means:
+
+* token (your Slack token)
+* weather:apitoken (your open weathermap token)
+
+The last thing you need to do is ensure that your Igor function has usage access to the key, by allowing the role to have that access.
 
 # TODO
 
@@ -38,7 +55,7 @@ If you wish to contribute in any way (reporting bugs, requesting features, writi
 2. Make your changes
 3. Make a pull request that explains what it does
 
-To make plugin development easier, there is a snippet for Sublime Text included in the devtools directory. If you copy this to your User package you can easily create the skeleton for a plugin with it.
+To make plugin development easier, there is an example plugin available in the devtools directory (example.go.plugin).
 
 You can also test your commands locally using `bin/testcommand.sh`. This script will read your config.yml file and based on that it will generate a correctly formatted json string and provide that to the binary.
 
