@@ -89,9 +89,9 @@ func getCommandName(plugin IgorPlugin) (string, string) {
 			if matchArray != nil {
 				match = strings.ToLower(matchArray[1])
 			}
-			if match != "" && match == subCommand {
+			if strings.ToLower(plugin.Message()) == strings.ToLower(value.Command) {
 				return name, language
-			} else if strings.ToLower(plugin.Message()) == strings.ToLower(value.Command) {
+			} else if match != "" && match == subCommand {
 				return name, language
 			}
 		}
