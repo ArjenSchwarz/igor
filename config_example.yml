@@ -1,5 +1,5 @@
 token: "YOUR_SLACK_TOKEN"
-# blacklist: ["weather"] # The blacklist contains the plugins you don't want to use. The help plugin is always active
+blacklist: ["remember"] # The blacklist contains the plugins you don't want to use. The help plugin is always active
 # whitelist: ["weather"] # The whitelist contains the plugins you only want to use. The help plugin is always active
 weather:
   api_token: "GET THIS FROM http://openweathermap.org"

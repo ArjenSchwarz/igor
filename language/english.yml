@@ -110,3 +110,30 @@ plugins:
       xkcd_specific:
         command: xkcd [nr]
         description: "Get a specific XKCD comic"
+
+  remember:
+    description: "Igor remembers links to images"
+    commands:
+      remember:
+        command: remember [name] [url]
+        description: Remember the url under the provided name
+        texts:
+          response_text: The image was saved as [replace]
+          forbidden: You aren't allowed to save images
+      show:
+        command: show [name]
+        description: Show what was remembered under the name
+        texts:
+          no_result: No image found with that name
+      showall:
+        command: show all
+        description: Show an overview of all the names that were remembered
+        texts:
+          response_text: Igor remembers the following images
+          no_result: Igor doesn't remember anything, maybe you should add some?
+      forget:
+        command: forget [name]
+        description: Forget the image with this name
+        texts:
+          response_text: The image has been removed
+          forbidden: You aren't allowed to make Igor forget something

@@ -15,6 +15,7 @@ Igor is currently early in development, and can't do much yet, but it is usable.
 * [(Random) Tumblr](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-(Random)-Tumblr) image, get a random image from a Tumblr blog
 * [Status](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Status), get the current status of webservices like GitHub and Bitbucket
 * [XKCD](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-XKCD), get the latest (or a specific/random) XKCD comic
+* [Remember](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Remember), save and display links to photos
 
 # Language support
 
@@ -38,6 +39,10 @@ Take note! You will have to encode all tokens in your configuration once you ena
 * weather:apitoken (your open weathermap token)
 
 The last thing you need to do is ensure that your Igor function has usage access to the key, by allowing the role to have that access.
+
+# DynamoDB support
+
+The Remember plugin uses DynamoDB to store its data. You will need to create a table and give your Igor function access to it. See the [plugin's page](https://github.com/ArjenSchwarz/igor/wiki/Plugin:-Remember) for more details.
 
 # TODO
 

@@ -108,3 +108,30 @@ plugins:
       xkcd_specific:
         command: ":pencil2: [nr]"
         description: "XKCD :hash:"
+
+  remember:
+    description: ":robot_face: :arrow_right: :frame_with_picture:"
+    commands:
+      remember:
+        command: ":thinking_face: [name] [url]"
+        description: ":thinking_face: :frame_with_picture: :grey_exclamation:"
+        texts:
+          response_text: "[replace] :arrow_right: :frame_with_picture:"
+          forbidden: ":crossed_swords:"
+      show:
+        command: ":frame_with_picture: [name]"
+        description: ":frame_with_picture:"
+        texts:
+          no_result: ¯\_(ツ)_/¯
+      showall:
+        command: ":frame_with_picture: :earth_africa"
+        description: ":frame_with_picture: :frame_with_picture: :frame_with_picture:"
+        texts:
+          response_text: ":frame_with_picture:"
+          no_result: ¯\_(ツ)_/¯
+      forget:
+        command: ":zipper_mouth_face: [name]"
+        description: ":frame_with_picture: :arrow_right: :zipper_mouth_face:"
+        texts:
+          response_text: ":zipper_mouth_face:"
+          forbidden: ":crossed_swords:"

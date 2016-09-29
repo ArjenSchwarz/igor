@@ -110,3 +110,29 @@ plugins:
       xkcd_specific:
         command: xkcd [nr]
         description: "Toon een specifieke XKCD strip"
+  remember:
+    description: "Igor onthoud fotos"
+    commands:
+      remember:
+        command: onthoud [naam] [url]
+        description: Herriner de link als de naam
+        texts:
+          response_text: De foto wordt onthouden als [replace]
+          forbidden: Igor mag uw fotos niet onthouden
+      show:
+        command: toon [naam]
+        description: Toon wat je hebt onthouden
+        texts:
+          no_result: Igor kan zich geen foto met die naam herinneren
+      showall:
+        command: toon alles
+        description: Geef een overzicht van alle foto's die Igor heeft onthouden
+        texts:
+          response_text: "Igor herinnert de volgende fotos:"
+          no_result: Igor kan helemaal niks herinneren, misschien moet u hem iets laten onthouden?
+      forget:
+        command: vergeet [name]
+        description: Vergeet de foto met deze naam
+        texts:
+          response_text: De foto is verwijderd
+          forbidden: U mag Igor niks laten vergeten

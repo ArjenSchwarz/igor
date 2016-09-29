@@ -1,21 +1,24 @@
 {
-    "randomtumblr": {
-        "devops": {
-            "imagesrc": ".item img",
-            "name": "DevOps Reactions",
-            "titlesrc": ".post_title",
-            "url": "http://devopsreactions.tumblr.com"
-        },
-        "infosec": {
-            "imagesrc": "#posts .body-text img",
-            "name": "Security Reactions",
-            "titlesrc": "#posts .post-content .title",
-            "url": "http://securityreactions.tumblr.com"
-        }
+  "randomtumblr": {
+    "devops": {
+      "imagesrc": ".item img",
+      "name": "DevOps Reactions",
+      "titlesrc": ".post_title",
+      "url": "http://devopsreactions.tumblr.com"
     },
-    "token": "YOUR_SLACK_TOKEN",
-    "weather": {
-        "api_token": "GET THIS FROM http://openweathermap.org",
-        "default_city": "Melbourne,au"
+    "infosec": {
+      "imagesrc": "#posts .body-text img",
+      "name": "Security Reactions",
+      "titlesrc": "#posts .post-content .title",
+      "url": "http://securityreactions.tumblr.com"
     }
+  },
+  "token": "YOUR_SLACK_TOKEN",
+  "weather": {
+    "api_token": "GET THIS FROM http://openweathermap.org",
+    "default_city": "Melbourne,au"
+  },
+  "blacklist": [
+    "remember"
+  ]
 }

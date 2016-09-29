@@ -35,6 +35,7 @@ func GetPlugins(request slack.Request, config config.Config) map[string]IgorPlug
 	plugins["tumblr"], _ = RandomTumblr(request)
 	plugins["status"], _ = Status(request)
 	plugins["xkcd"], _ = Xkcd(request)
+	plugins["remember"], _ = Remember(request)
 
 	// Whitelist plugins
 	if config.Whitelist != nil {
@@ -75,7 +76,7 @@ func CreateNoMatchError(message string) *NoMatchError {
 func getCommandName(plugin IgorPlugin) (string, string) {
 	// It's possible for a command to have substitutions
 	// Therefore, this needs to be taken into account
-	reMain := regexp.MustCompile("(.*) \\[")
+	reMain := regexp.MustCompile("([^\\[]+) \\[")
 	reCommand := regexp.MustCompile("^([^ ]*) ?")
 	subCommandArray := reCommand.FindStringSubmatch(plugin.Message())
 	subCommand := ""
