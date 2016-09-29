@@ -115,6 +115,7 @@ func addTumblrAttachment(response slack.Response, chosentumblr tumblrDetails) (s
 	}
 	if title == "" {
 		attach.Title = chosentumblr.Name
+		attach.TitleLink = doc.Url.String()
 	}
 	response.AddAttachment(attach)
 	return response, err
