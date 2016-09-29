@@ -265,5 +265,5 @@ func (plugin RememberPlugin) Name() string {
 
 // Message returns a formatted version of the original message
 func (plugin RememberPlugin) Message() string {
-	return strings.ToLower(plugin.request.Text)
+	return plugin.request.Text
 }
