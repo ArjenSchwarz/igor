@@ -124,7 +124,6 @@ plugins:
         command: show [name]
         description: Show what was remembered under the name
         texts:
-          response_text: Igor found this image
           no_result: No image found with that name
       showall:
         command: show all

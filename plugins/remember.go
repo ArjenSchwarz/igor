@@ -171,10 +171,11 @@ func (plugin RememberPlugin) handleShow(response slack.Response) (slack.Response
 				return response, nil
 			}
 		}
+		response.UnfurlMedia = true
+		response.UnfurlLinks = true
 		return response, err
 	}
 
-	response.Text = commandDetails.Texts["response_text"]
 	attach := slack.Attachment{
 		Title:    aws.StringValue(resp.Item["name"].S),
 		ImageURL: aws.StringValue(resp.Item["url"].S),
