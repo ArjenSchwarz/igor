@@ -122,6 +122,7 @@ plugins:
         command: ":frame_with_picture: [name]"
         description: ":frame_with_picture:"
         texts:
+          response_text: ":frame_with_picture:"
           no_result: ¯\_(ツ)_/¯
       showall:
         command: ":frame_with_picture: :earth_africa"

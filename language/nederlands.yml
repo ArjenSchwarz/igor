@@ -123,6 +123,7 @@ plugins:
         command: toon [naam]
         description: Toon wat je hebt onthouden
         texts:
+          response_text: Igor vondt deze foto
           no_result: Igor kan zich geen foto met die naam herinneren
       showall:
         command: toon alles

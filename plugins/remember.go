@@ -174,8 +174,9 @@ func (plugin RememberPlugin) handleShow(response slack.Response) (slack.Response
 		return response, err
 	}
 
-	response.Text = aws.StringValue(resp.Item["name"].S)
+	response.Text = commandDetails.Texts["response_text"]
 	attach := slack.Attachment{
+		Title:    aws.StringValue(resp.Item["name"].S),
 		ImageURL: aws.StringValue(resp.Item["url"].S),
 	}
 	response.AddAttachment(attach)
@@ -200,7 +201,7 @@ func (plugin RememberPlugin) handleShowAll(response slack.Response) (slack.Respo
 	if err != nil {
 		return response, err
 	}
-	if resp.Count == aws.Int64(0) {
+	if aws.Int64Value(resp.Count) == int64(0) {
 		response.Text = commandDetails.Texts["no_result"]
 	} else {
 		response.Text = commandDetails.Texts["response_text"]
