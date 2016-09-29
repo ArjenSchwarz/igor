@@ -79,6 +79,7 @@ func getCommandName(plugin IgorPlugin) (string, string) {
 	reCommand := regexp.MustCompile("^([^ ]*) ?")
 	subCommandArray := reCommand.FindStringSubmatch(plugin.Message())
 	subCommand := ""
+	softmatch := make(map[string]string)
 	if subCommandArray != nil {
 		subCommand = strings.ToLower(subCommandArray[1])
 	}
@@ -92,8 +93,13 @@ func getCommandName(plugin IgorPlugin) (string, string) {
 			if strings.ToLower(plugin.Message()) == strings.ToLower(value.Command) {
 				return name, language
 			} else if match != "" && match == subCommand {
-				return name, language
+				softmatch[language] = name
 			}
+		}
+	}
+	if len(softmatch) > 0 {
+		for language, name := range softmatch {
+			return name, language
 		}
 	}
 	return "", ""
