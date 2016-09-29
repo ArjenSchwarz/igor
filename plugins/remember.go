@@ -177,8 +177,9 @@ func (plugin RememberPlugin) handleShow(response slack.Response) (slack.Response
 	}
 
 	attach := slack.Attachment{
-		Title:    aws.StringValue(resp.Item["name"].S),
-		ImageURL: aws.StringValue(resp.Item["url"].S),
+		Title:     aws.StringValue(resp.Item["name"].S),
+		TitleLink: aws.StringValue(resp.Item["url"].S),
+		ImageURL:  aws.StringValue(resp.Item["url"].S),
 	}
 	response.AddAttachment(attach)
 	response.SetPublic()
