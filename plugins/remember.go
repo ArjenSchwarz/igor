@@ -173,10 +173,13 @@ func (plugin RememberPlugin) handleShow(response slack.Response) (slack.Response
 		}
 		return response, err
 	}
-	response.Text = aws.StringValue(resp.Item["url"].S)
-	response.UnfurlMedia = true
-	response.UnfurlLinks = true
-	response.SetPublic()
+	response.Text = commandDetails.Texts["no_result"]
+	if val, ok := resp.Item["url"]; ok {
+		response.Text = aws.StringValue(val.S)
+		response.UnfurlMedia = true
+		response.UnfurlLinks = true
+		response.SetPublic()
+	}
 	return response, nil
 }
 
