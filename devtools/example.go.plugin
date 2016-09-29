@@ -1,0 +1,121 @@
+package plugins
+
+import (
+	"strings"
+
+	"github.com/ArjenSchwarz/igor/config"
+	"github.com/ArjenSchwarz/igor/slack"
+)
+
+// ExamplePlugin provides example functions
+type ExamplePlugin struct {
+	name        string
+	description string
+	request     slack.Request
+	config      exampleConfig
+}
+
+// Example instantiates the ExamplePlugin
+func Example(request slack.Request) IgorPlugin {
+	pluginName := "example"
+	pluginConfig := exampleConfig{
+		languages: getPluginLanguages(pluginName),
+	}
+	plugin := ExamplePlugin{
+		name:    pluginName,
+		request: request,
+		config:  pluginConfig,
+	}
+
+	return plugin
+}
+
+// Work parses the request and ensures a request comes through if any triggers
+// are matched. Handled triggers:
+//
+//  * example
+//  * example2
+func (plugin ExamplePlugin) Work() (slack.Response, error) {
+	response := slack.Response{}
+	message, language := getCommandName(plugin)
+	plugin.config.chosenLanguage = language
+	switch message {
+	case "example":
+		tmpresponse, err := plugin.handleExample(response)
+		if err != nil {
+			return tmpresponse, err
+		}
+		response = tmpresponse
+	case "example2":
+		tmpresponse, err := plugin.handleExample2(response)
+		if err != nil {
+			return tmpresponse, err
+		}
+		response = tmpresponse
+	}
+	if response.Text == "" {
+		return response, CreateNoMatchError("Nothing found")
+	}
+	return response, nil
+}
+
+// Describe provides the triggers ExamplePlugin can handle
+func (plugin ExamplePlugin) Describe(language string) map[string]string {
+	descriptions := make(map[string]string)
+
+	for _, values := range getAllCommands(plugin, language) {
+		descriptions[values.Command] = values.Description
+	}
+	return descriptions
+}
+
+func (plugin ExamplePlugin) handleExample(response slack.Response) (slack.Response, error) {
+	commandDetails := getCommandDetails(plugin, "example")
+	response.Text = commandDetails.Texts["response_text"]
+	// do Stuff
+	return response, nil
+}
+
+func (plugin ExamplePlugin) handleExample2(response slack.Response) (slack.Response, error) {
+	commandDetails := getCommandDetails(plugin, "example2")
+	response.Text = commandDetails.Texts["response_text"]
+	// do Stuff
+	return response, nil
+}
+
+// Functions to satisfy the interfaces are below
+
+// Config returns the plugin configuration
+func (plugin ExamplePlugin) Config() IgorConfig {
+	return plugin.config
+}
+
+type exampleConfig struct {
+	languages      map[string]config.LanguagePluginDetails
+	chosenLanguage string
+}
+
+// Languages returns the languages available for the plugin
+func (config exampleConfig) Languages() map[string]config.LanguagePluginDetails {
+	return config.languages
+}
+
+// ChosenLanguage returns the language active for this plugin
+func (config exampleConfig) ChosenLanguage() string {
+	return config.chosenLanguage
+}
+
+// Description returns a global description of the plugin
+func (plugin ExamplePlugin) Description(language string) string {
+	return getDescriptionText(plugin, language)
+}
+
+// Name returns the name of the plugin
+func (plugin ExamplePlugin) Name() string {
+	return plugin.name
+}
+
+// Message returns a formatted version of the original message
+func (plugin ExamplePlugin) Message() string {
+	return strings.ToLower(plugin.request.Text)
+}
