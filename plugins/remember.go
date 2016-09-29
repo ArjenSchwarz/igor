@@ -175,13 +175,13 @@ func (plugin RememberPlugin) handleShow(response slack.Response) (slack.Response
 		response.UnfurlLinks = true
 		return response, err
 	}
-
-	attach := slack.Attachment{
-		Title:     aws.StringValue(resp.Item["name"].S),
-		TitleLink: aws.StringValue(resp.Item["url"].S),
-		ImageURL:  aws.StringValue(resp.Item["url"].S),
-	}
-	response.AddAttachment(attach)
+	response.Text = aws.StringValue(resp.Item["url"].S)
+	// attach := slack.Attachment{
+	// 	Title:     aws.StringValue(resp.Item["name"].S),
+	// 	TitleLink: ,
+	// 	ImageURL:  aws.StringValue(resp.Item["url"].S),
+	// }
+	// response.AddAttachment(attach)
 	response.SetPublic()
 	return response, nil
 }
