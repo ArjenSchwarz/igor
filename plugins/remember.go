@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -47,7 +46,7 @@ func Remember(request slack.Request) (IgorPlugin, error) {
 func (plugin RememberPlugin) Work() (slack.Response, error) {
 	response := slack.Response{}
 	if plugin.config.Dynamodb == "" {
-		return response, errors.New("No DynamoDB configured")
+		return response, CreateNoMatchError("No DynamoDB configured")
 	}
 	message, language := getCommandName(plugin)
 	plugin.config.chosenLanguage = language
