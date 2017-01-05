@@ -15,3 +15,24 @@ randomtumblr:
     url: "http://securityreactions.tumblr.com"
     imagesrc: "#posts .body-text img"
     titlesrc: "#posts .post-content .title"
+  paintings:
+    name: Classic Programmer Paintings
+    url: "http://classicprogrammerpaintings.tumblr.com"
+    imagesrc: "#posts .photo-wrapper-inner a img"
+    titlesrc: "#posts .post-content figcaption"
+  gosling:
+    name: Programmer Ryan Gossling
+    url: "http://programmerryangosling.tumblr.com"
+    imagesrc: "#main article div img"
+    titlesrc: ""
+  onejob:
+    name: You Had One Job
+    url: "http://youhadonejob.org"
+    titlesrc: "div.caption p"
+    imagesrc: "#container .typePhoto img"
+status:
+  main: [aws, github, bitbucket, docker, npmjs]
+remember:
+  dynamodb: igorRemember
+  admins:
+    - arjen
