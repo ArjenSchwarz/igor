@@ -43,9 +43,10 @@ build:
     - script:
         name: Prepare for personal releases
         code: |
-          mkdir -p personal/ignoreme personal/gang zips
+          mkdir -p personal/ignoreme personal/gang personal/legends zips
           cp -R main index.js language personal/ignoreme
           cp -R main index.js language personal/gang
+          cp -R main index.js language personal/legends
     - arjen/s3get:
         access_key: $AWS_ACCESS_KEY
         secret_key: $AWS_SECRET_KEY
@@ -58,6 +59,12 @@ build:
         bucket: igor-configs
         key: gang.yml
         filename: $WERCKER_SOURCE_DIR/personal/gang/config.yml
+    - arjen/s3get:
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        bucket: igor-configs
+        key: legends.yml
+        filename: $WERCKER_SOURCE_DIR/personal/legends/config.yml
     - script:
         name: Create personal releases
         code: |
@@ -65,6 +72,8 @@ build:
           zip -r $WERCKER_SOURCE_DIR/zips/ignoreme.zip *
           cd $WERCKER_SOURCE_DIR/personal/gang
           zip -r $WERCKER_SOURCE_DIR/zips/gang.zip *
+          cd $WERCKER_SOURCE_DIR/personal/legends
+          zip -r $WERCKER_SOURCE_DIR/zips/legends.zip *
           cd $WERCKER_SOURCE_DIR
           cp -R $WERCKER_SOURCE_DIR/zips $ORG_SOURCE
           ls $ORG_SOURCE/zips
@@ -105,3 +114,8 @@ deploy:
         secret_key: $AWS_SECRET_KEY
         function_name: igorGang
         filepath: $WERCKER_SOURCE_DIR/zips/gang.zip
+    - arjen/lambda:
+        access_key: $AWS_ACCESS_KEY
+        secret_key: $AWS_SECRET_KEY
+        function_name: legendsigor
+        filepath: $WERCKER_SOURCE_DIR/zips/legends.zip
