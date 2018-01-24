@@ -4,11 +4,32 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
+	"log"
 	"net/http"
 	"net/url"
-	"os"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 )
+
+// Handler is your Lambda function handler
+// It uses Amazon API Gateway request/responses provided by the aws-lambda-go/events package,
+// However you could use other event sources (S3, Kinesis etc), or JSON-decoded primitive types such as 'string'.
+func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	log.Printf("Processing Lambda request %s\n", request.RequestContext.RequestID)
+	body := body{}
+	json.Unmarshal([]byte(request.Body), &body)
+
+	response := handle(body)
+
+	responseArray, _ := json.Marshal(response)
+	n := bytes.IndexByte(responseArray, 0)
+	responseString := string(responseArray[:n])
+	return events.APIGatewayProxyResponse{
+		Body:       responseString,
+		StatusCode: 200,
+	}, nil
+}
 
 type message struct {
 	Value string `json:"value"`
@@ -43,18 +64,7 @@ func main() {
 		})
 		http.ListenAndServe(":8080", nil)
 	} else {
-		buf := new(bytes.Buffer)
-		args := os.Args
-		event := []byte(args[1])
-
-		body := body{}
-		json.Unmarshal(event, &body)
-
-		response := handle(body)
-
-		responseString, _ := json.Marshal(response)
-		fmt.Fprintf(buf, "%s", responseString)
-		buf.WriteTo(os.Stdout)
+		lambda.Start(Handler)
 	}
 }
 

@@ -37,16 +37,16 @@ build:
         code: |
           mkdir dist
           cp config_example.yml config.yml
-          zip -r dist/igor.zip main index.js config.yml language/
+          zip -r dist/igor.zip main config.yml language/
           zip -r dist/installation.zip installation
           cp -R dist $ORG_SOURCE/
     - script:
         name: Prepare for personal releases
         code: |
           mkdir -p personal/ignoreme personal/gang personal/legends zips
-          cp -R main index.js language personal/ignoreme
-          cp -R main index.js language personal/gang
-          cp -R main index.js language personal/legends
+          cp -R main language personal/ignoreme
+          cp -R main language personal/gang
+          cp -R main language personal/legends
     - arjen/s3get:
         access_key: $AWS_ACCESS_KEY
         secret_key: $AWS_SECRET_KEY
