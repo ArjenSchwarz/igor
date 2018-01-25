@@ -16,8 +16,8 @@ import (
 // However you could use other event sources (S3, Kinesis etc), or JSON-decoded primitive types such as 'string'.
 func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	log.Printf("Processing Lambda request %s\n", request.RequestContext.RequestID)
-	body := body{}
-	json.Unmarshal([]byte(request.Body), &body)
+	body := body{Body: request.Body}
+	// json.Unmarshal([]byte(request.Body), &body)
 
 	log.Printf("Original body: %s\n", request.Body)
 
