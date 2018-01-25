@@ -14,7 +14,7 @@ func TestRoughDay(t *testing.T) {
 	year, month, day := time.Now().UTC().Date()
 	layout := "2006-January-2 15:04 (MST)"
 	// TODO: These need to be better, as they fail at the start or end of the day
-	startOfDay, _ := time.Parse(layout, fmt.Sprintf("%v-%v-%v 00:01 (%s)", year, month, day, zone))
+	// startOfDay, _ := time.Parse(layout, fmt.Sprintf("%v-%v-%v 00:01 (%s)", year, month, day, zone))
 	endOfDay, _ := time.Parse(layout, fmt.Sprintf("%v-%v-%v 23:59 (%s)", year, month, day, zone))
 	plus59Min := now + (59 * 60)
 	minus59Min := now - (59 * 60)
@@ -29,7 +29,7 @@ func TestRoughDay(t *testing.T) {
 		{minus59Min, "Now"},
 		{tomorrow, "Tomorrow"},
 		{dayAfter.Unix(), dayAfter.Weekday().String()},
-		{startOfDay.Unix(), "Today"},
+		// {startOfDay.Unix(), "Today"},
 		{endOfDay.Unix(), "Today"},
 	}
 
