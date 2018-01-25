@@ -12,18 +12,12 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// Handler is your Lambda function handler
-// It uses Amazon API Gateway request/responses provided by the aws-lambda-go/events package,
-// However you could use other event sources (S3, Kinesis etc), or JSON-decoded primitive types such as 'string'.
+// Handler handles incoming Lambda requests
 func Handler(request events.APIGatewayProxyRequest) (slack.Response, error) {
 	log.Printf("Processing Lambda request %s\n", request.RequestContext.RequestID)
 
-	body := body{Body: request.Body}
+	response := handle(body{Body: request.Body})
 
-	response := handle(body)
-
-	// responseArray, _ := json.Marshal(response)
-	// responseString := string(responseArray)
 	return response, nil
 }
 
@@ -52,8 +46,7 @@ func main() {
 					v.Add(field, value)
 				}
 			}
-			body := body{Body: v.Encode()}
-			response := handle(body)
+			response := handle(body{Body: v.Encode()})
 			responseString, _ := json.Marshal(response)
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.Write(responseString)
