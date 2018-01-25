@@ -2,7 +2,7 @@
 
 # Igor
 
-Igor is a Slack Slash command that acts like a bot. The code is written in Go and is designed to be run on AWS Lambda through a NodeJS wrapper or as a Docker container. All commands are handled through plugins, making it extendable.
+Igor is a Slack Slash command that acts like a bot. The code is written in Go and is designed to run on Lambda or as a Docker container. All commands are handled through plugins, making it extendable.
 
 The name is based on Sir Terry Pratchett's wonderful use of Dr. Frankenstein's servant. No disrespect intended.
 

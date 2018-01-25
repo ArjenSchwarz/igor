@@ -43,8 +43,8 @@ Example:
 ### Lambda
 
 1. In your AWS Console, create a new Lambda function. When asked for a blueprint, skip this (the option is at the bottom).
-2. Provide the name and description to the project, and ensure that the Runtime is set to NodeJS. 
-3. For the source you can upload the zipfile you just created. 
+2. Provide the name and description to the project, and ensure that the Runtime is set to Go1.x and the handler is set to `main`. 
+3. For the source you can upload the zipfile you just created.
 4. Set the role. If you don't have one yet, you can select to create a Basic Execution Role and use that. Currently no other permissions are required.
 5. All other settings you can leave at their default values, and you can continue to create the function.
 
@@ -52,14 +52,14 @@ Example:
 
 At this point you will be brought to an overview of the function. Here you will need to select the API endpoints tab and then follow the remaining steps.
 
-1. Click on add a new API endpoint. 
+1. Click on add a new API endpoint.
 2. Choose the API Gateway option and a resource name that you're happy with. Also, make sure to set the Method to **POST**, and the Security to **OPEN**.
 
-You are then returned to the function's API endpoint overview. 
+You are then returned to the function's API endpoint overview.
 
 3. Make a note of the API endpoint as we'll need it later.
 4. Click on the *prod* link to configure the remaining details.
-5. Click on the link for Resources and then select the POST under your endpoint's name (for example /igor). 
+5. Click on the link for Resources and then select the POST under your endpoint's name (for example /igor).
 6. Select the Integration Request, and add a new Mapping Template. The Content-Type for this should be: `application/x-www-form-urlencoded`.
 7. After you've created this template, change it from *Input Passthrough* to *Mapping template* and use `{ "body": $input.json("$") }` as the mapping template.
 
