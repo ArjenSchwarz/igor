@@ -1,14 +1,25 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
-	"fmt"
+	"log"
 	"net/http"
 	"net/url"
-	"os"
+
+	"github.com/ArjenSchwarz/igor/slack"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 )
+
+// Handler handles incoming Lambda requests
+func Handler(request events.APIGatewayProxyRequest) (slack.Response, error) {
+	log.Printf("Processing Lambda request %s\n", request.RequestContext.RequestID)
+
+	response := handle(body{Body: request.Body})
+
+	return response, nil
+}
 
 type message struct {
 	Value string `json:"value"`
@@ -35,26 +46,14 @@ func main() {
 					v.Add(field, value)
 				}
 			}
-			body := body{Body: v.Encode()}
-			response := handle(body)
+			response := handle(body{Body: v.Encode()})
 			responseString, _ := json.Marshal(response)
 			w.Header().Set("Content-Type", "application/json; charset=utf-8")
 			w.Write(responseString)
 		})
 		http.ListenAndServe(":8080", nil)
 	} else {
-		buf := new(bytes.Buffer)
-		args := os.Args
-		event := []byte(args[1])
-
-		body := body{}
-		json.Unmarshal(event, &body)
-
-		response := handle(body)
-
-		responseString, _ := json.Marshal(response)
-		fmt.Fprintf(buf, "%s", responseString)
-		buf.WriteTo(os.Stdout)
+		lambda.Start(Handler)
 	}
 }
 

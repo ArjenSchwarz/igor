@@ -22,7 +22,7 @@ APINAME="${NAME}Api"
 
 # Create the Lambda function
 echo "Creating the Lambda function"
-aws lambda create-function --function-name "${NAME}" --runtime nodejs --role ${ARN_ROLE} --handler index.handler --zip-file fileb://igor.zip --region ${REGION}
+aws lambda create-function --function-name "${NAME}" --runtime go1.x --role ${ARN_ROLE} --handler main --zip-file fileb://igor.zip --region ${REGION}
 LAMBDAARN=$(aws lambda list-functions --query "Functions[?FunctionName==\`${NAME}\`].FunctionArn" --output text --region ${REGION})
 
 # Create the API Gateway
