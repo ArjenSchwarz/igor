@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"log"
@@ -23,8 +22,8 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	response := handle(body)
 
 	responseArray, _ := json.Marshal(response)
-	n := bytes.IndexByte(responseArray, 0)
-	responseString := string(responseArray[:n])
+	// n := bytes.IndexByte(responseArray, 0)
+	responseString := string(responseArray)
 	return events.APIGatewayProxyResponse{
 		Body:       responseString,
 		StatusCode: 200,
