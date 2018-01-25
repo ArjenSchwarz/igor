@@ -19,6 +19,10 @@ func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyRespo
 	body := body{}
 	json.Unmarshal([]byte(request.Body), &body)
 
+	log.Printf("Original body: %s\n", request.Body)
+
+	log.Printf("Parsed body: %s\n", body)
+
 	response := handle(body)
 
 	responseArray, _ := json.Marshal(response)
