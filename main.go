@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/ArjenSchwarz/igor/slack"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -14,24 +15,16 @@ import (
 // Handler is your Lambda function handler
 // It uses Amazon API Gateway request/responses provided by the aws-lambda-go/events package,
 // However you could use other event sources (S3, Kinesis etc), or JSON-decoded primitive types such as 'string'.
-func Handler(request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func Handler(request events.APIGatewayProxyRequest) (slack.Response, error) {
 	log.Printf("Processing Lambda request %s\n", request.RequestContext.RequestID)
+
 	body := body{Body: request.Body}
-	// json.Unmarshal([]byte(request.Body), &body)
-
-	log.Printf("Original body: %s\n", request.Body)
-
-	log.Printf("Parsed body: %s\n", body)
 
 	response := handle(body)
 
-	responseArray, _ := json.Marshal(response)
-	// n := bytes.IndexByte(responseArray, 0)
-	responseString := string(responseArray)
-	return events.APIGatewayProxyResponse{
-		Body:       responseString,
-		StatusCode: 200,
-	}, nil
+	// responseArray, _ := json.Marshal(response)
+	// responseString := string(responseArray)
+	return response, nil
 }
 
 type message struct {
