@@ -2,9 +2,10 @@ package helpers_test
 
 import (
 	"fmt"
-	"github.com/ArjenSchwarz/igor/helpers"
 	"testing"
 	"time"
+
+	"github.com/ArjenSchwarz/igor/helpers"
 )
 
 func TestRoughDay(t *testing.T) {
